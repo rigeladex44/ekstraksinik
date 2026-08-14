@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html lang="id" class="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Ekstraktor NIK Premium | Real-time Parser & Analytics</title>
-    
+
     <!-- Meta SEO -->
-    <meta name="description" content="Ekstrak data secara instan dari Nomor Induk Kependudukan (NIK) Indonesia. Dapatkan Tanggal Lahir, Jenis Kelamin, Provinsi, Umur Detail, Zodiac, dan Shio. 100% Aman & Berjalan di Browser Anda.">
+    <meta name="description"
+        content="Ekstrak data secara instan dari Nomor Induk Kependudukan (NIK) Indonesia. Dapatkan Tanggal Lahir, Jenis Kelamin, Provinsi, Umur Detail, Zodiac, dan Shio. 100% Aman & Berjalan di Browser Anda.">
     <meta name="author" content="ADEX IDN">
     <meta name="keywords" content="ekstraktor nik, parser nik, cek nik, ktp parser, data kependudukan, indonesia">
-    
+
     <!-- Google Fonts - Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
     <!-- Tailwind CSS with custom branding config -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -49,7 +53,7 @@
             }
         }
     </script>
-    
+
     <!-- React, ReactDOM & Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -60,59 +64,72 @@
         body {
             transition: background-color 0.3s ease, color 0.3s ease;
         }
+
         .glass-panel {
             background-color: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(12px);
         }
+
         .dark .glass-panel {
             background-color: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(12px);
         }
+
         /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
+
         ::-webkit-scrollbar-track {
             background: transparent;
         }
+
         ::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 9999px;
         }
+
         .dark ::-webkit-scrollbar-thumb {
             background: #475569;
         }
+
         ::-webkit-scrollbar-thumb:hover {
             background: #a78bfa;
         }
-        
+
         /* Shimmer effect */
         @keyframes shimmer {
-            100% { transform: translateX(100%); }
+            100% {
+                transform: translateX(100%);
+            }
         }
+
         .shimmer {
             position: relative;
             overflow: hidden;
         }
+
         .shimmer::after {
             position: absolute;
-            top: 0; right: 0; bottom: 0; left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
             transform: translateX(-100%);
-            background-image: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.2) 20%,
-                rgba(255, 255, 255, 0.5) 60%,
-                rgba(255, 255, 255, 0) 100%
-            );
+            background-image: linear-gradient(90deg,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.2) 20%,
+                    rgba(255, 255, 255, 0.5) 60%,
+                    rgba(255, 255, 255, 0) 100%);
             animation: shimmer 2s infinite;
             content: '';
         }
     </style>
 </head>
+
 <body class="bg-[#f8fafc] dark:bg-[#090d16] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col antialiased">
-    
+
     <div id="root"></div>
 
     <script type="text/babel">
@@ -162,579 +179,579 @@
 
         // Regencies and Cities of Indonesia dictionary
         const REGENCY_MAP = {
-    "1101": "Kab. Simeulue",
-    "1102": "Kab. Aceh Singkil",
-    "1103": "Kab. Aceh Selatan",
-    "1104": "Kab. Aceh Tenggara",
-    "1105": "Kab. Aceh Timur",
-    "1106": "Kab. Aceh Tengah",
-    "1107": "Kab. Aceh Barat",
-    "1108": "Kab. Aceh Besar",
-    "1109": "Kab. Pidie",
-    "1110": "Kab. Bireuen",
-    "1111": "Kab. Aceh Utara",
-    "1112": "Kab. Aceh Barat Daya",
-    "1113": "Kab. Gayo Lues",
-    "1114": "Kab. Aceh Tamiang",
-    "1115": "Kab. Nagan Raya",
-    "1116": "Kab. Aceh Jaya",
-    "1117": "Kab. Bener Meriah",
-    "1118": "Kab. Pidie Jaya",
-    "1171": "Kota Banda Aceh",
-    "1172": "Kota Sabang",
-    "1173": "Kota Langsa",
-    "1174": "Kota Lhokseumawe",
-    "1175": "Kota Subulussalam",
-    "1201": "Kab. Nias",
-    "1202": "Kab. Mandailing Natal",
-    "1203": "Kab. Tapanuli Selatan",
-    "1204": "Kab. Tapanuli Tengah",
-    "1205": "Kab. Tapanuli Utara",
-    "1206": "Kab. Toba Samosir",
-    "1207": "Kab. Labuhan Batu",
-    "1208": "Kab. Asahan",
-    "1209": "Kab. Simalungun",
-    "1210": "Kab. Dairi",
-    "1211": "Kab. Karo",
-    "1212": "Kab. Deli Serdang",
-    "1213": "Kab. Langkat",
-    "1214": "Kab. Nias Selatan",
-    "1215": "Kab. Humbang Hasundutan",
-    "1216": "Kab. Pakpak Bharat",
-    "1217": "Kab. Samosir",
-    "1218": "Kab. Serdang Bedagai",
-    "1219": "Kab. Batu Bara",
-    "1220": "Kab. Padang Lawas Utara",
-    "1221": "Kab. Padang Lawas",
-    "1222": "Kab. Labuhan Batu Selatan",
-    "1223": "Kab. Labuhan Batu Utara",
-    "1224": "Kab. Nias Utara",
-    "1225": "Kab. Nias Barat",
-    "1271": "Kota Sibolga",
-    "1272": "Kota Tanjung Balai",
-    "1273": "Kota Pematang Siantar",
-    "1274": "Kota Tebing Tinggi",
-    "1275": "Kota Medan",
-    "1276": "Kota Binjai",
-    "1277": "Kota Padang Sidempuan",
-    "1278": "Kota Gunungsitoli",
-    "1301": "Kab. Kepulauan Mentawai",
-    "1302": "Kab. Pesisir Selatan",
-    "1303": "Kab. Solok",
-    "1304": "Kab. Sijunjung",
-    "1305": "Kab. Tanah Datar",
-    "1306": "Kab. Padang Pariaman",
-    "1307": "Kab. Agam",
-    "1308": "Kab. Lima Puluh Kota",
-    "1309": "Kab. Pasaman",
-    "1310": "Kab. Solok Selatan",
-    "1311": "Kab. Dharmasraya",
-    "1312": "Kab. Pasaman Barat",
-    "1371": "Kota Padang",
-    "1372": "Kota Solok",
-    "1373": "Kota Sawah Lunto",
-    "1374": "Kota Padang Panjang",
-    "1375": "Kota Bukittinggi",
-    "1376": "Kota Payakumbuh",
-    "1377": "Kota Pariaman",
-    "1401": "Kab. Kuantan Singingi",
-    "1402": "Kab. Indragiri Hulu",
-    "1403": "Kab. Indragiri Hilir",
-    "1404": "Kab. Pelalawan",
-    "1405": "Kab. Siak",
-    "1406": "Kab. Kampar",
-    "1407": "Kab. Rokan Hulu",
-    "1408": "Kab. Bengkalis",
-    "1409": "Kab. Rokan Hilir",
-    "1410": "Kab. Kepulauan Meranti",
-    "1471": "Kota Pekanbaru",
-    "1473": "Kota Dumai",
-    "1501": "Kab. Kerinci",
-    "1502": "Kab. Merangin",
-    "1503": "Kab. Sarolangun",
-    "1504": "Kab. Batang Hari",
-    "1505": "Kab. Muaro Jambi",
-    "1506": "Kab. Tanjung Jabung Timur",
-    "1507": "Kab. Tanjung Jabung Barat",
-    "1508": "Kab. Tebo",
-    "1509": "Kab. Bungo",
-    "1571": "Kota Jambi",
-    "1572": "Kota Sungai Penuh",
-    "1601": "Kab. Ogan Komering Ulu",
-    "1602": "Kab. Ogan Komering Ilir",
-    "1603": "Kab. Muara Enim",
-    "1604": "Kab. Lahat",
-    "1605": "Kab. Musi Rawas",
-    "1606": "Kab. Musi Banyu Asin",
-    "1607": "Kab. Banyu Asin",
-    "1608": "Kab. Ogan Komering Ulu Selatan",
-    "1609": "Kab. Ogan Komering Ulu Timur",
-    "1610": "Kab. Ogan Ilir",
-    "1611": "Kab. Empat Lawang",
-    "1612": "Kab. Penukal Abab Lematang Ilir",
-    "1613": "Kab. Musi Rawas Utara",
-    "1671": "Kota Palembang",
-    "1672": "Kota Prabumulih",
-    "1673": "Kota Pagar Alam",
-    "1674": "Kota Lubuk Linggau",
-    "1701": "Kab. Bengkulu Selatan",
-    "1702": "Kab. Rejang Lebong",
-    "1703": "Kab. Bengkulu Utara",
-    "1704": "Kab. Kaur",
-    "1705": "Kab. Seluma",
-    "1706": "Kab. Mukomuko",
-    "1707": "Kab. Lebong",
-    "1708": "Kab. Kepahiang",
-    "1709": "Kab. Bengkulu Tengah",
-    "1771": "Kota Bengkulu",
-    "1801": "Kab. Lampung Barat",
-    "1802": "Kab. Tanggamus",
-    "1803": "Kab. Lampung Selatan",
-    "1804": "Kab. Lampung Timur",
-    "1805": "Kab. Lampung Tengah",
-    "1806": "Kab. Lampung Utara",
-    "1807": "Kab. Way Kanan",
-    "1808": "Kab. Tulangbawang",
-    "1809": "Kab. Pesawaran",
-    "1810": "Kab. Pringsewu",
-    "1811": "Kab. Mesuji",
-    "1812": "Kab. Tulang Bawang Barat",
-    "1813": "Kab. Pesisir Barat",
-    "1871": "Kota Bandar Lampung",
-    "1872": "Kota Metro",
-    "1901": "Kab. Bangka",
-    "1902": "Kab. Belitung",
-    "1903": "Kab. Bangka Barat",
-    "1904": "Kab. Bangka Tengah",
-    "1905": "Kab. Bangka Selatan",
-    "1906": "Kab. Belitung Timur",
-    "1971": "Kota Pangkal Pinang",
-    "2101": "Kab. Karimun",
-    "2102": "Kab. Bintan",
-    "2103": "Kab. Natuna",
-    "2104": "Kab. Lingga",
-    "2105": "Kab. Kepulauan Anambas",
-    "2171": "Kota Batam",
-    "2172": "Kota Tanjung Pinang",
-    "3101": "Kab. Kepulauan Seribu",
-    "3171": "Kota Jakarta Selatan",
-    "3172": "Kota Jakarta Timur",
-    "3173": "Kota Jakarta Pusat",
-    "3174": "Kota Jakarta Barat",
-    "3175": "Kota Jakarta Utara",
-    "3201": "Kab. Bogor",
-    "3202": "Kab. Sukabumi",
-    "3203": "Kab. Cianjur",
-    "3204": "Kab. Bandung",
-    "3205": "Kab. Garut",
-    "3206": "Kab. Tasikmalaya",
-    "3207": "Kab. Ciamis",
-    "3208": "Kab. Kuningan",
-    "3209": "Kab. Cirebon",
-    "3210": "Kab. Majalengka",
-    "3211": "Kab. Sumedang",
-    "3212": "Kab. Indramayu",
-    "3213": "Kab. Subang",
-    "3214": "Kab. Purwakarta",
-    "3215": "Kab. Karawang",
-    "3216": "Kab. Bekasi",
-    "3217": "Kab. Bandung Barat",
-    "3218": "Kab. Pangandaran",
-    "3271": "Kota Bogor",
-    "3272": "Kota Sukabumi",
-    "3273": "Kota Bandung",
-    "3274": "Kota Cirebon",
-    "3275": "Kota Bekasi",
-    "3276": "Kota Depok",
-    "3277": "Kota Cimahi",
-    "3278": "Kota Tasikmalaya",
-    "3279": "Kota Banjar",
-    "3301": "Kab. Cilacap",
-    "3302": "Kab. Banyumas",
-    "3303": "Kab. Purbalingga",
-    "3304": "Kab. Banjarnegara",
-    "3305": "Kab. Kebumen",
-    "3306": "Kab. Purworejo",
-    "3307": "Kab. Wonosobo",
-    "3308": "Kab. Magelang",
-    "3309": "Kab. Boyolali",
-    "3310": "Kab. Klaten",
-    "3311": "Kab. Sukoharjo",
-    "3312": "Kab. Wonogiri",
-    "3313": "Kab. Karanganyar",
-    "3314": "Kab. Sragen",
-    "3315": "Kab. Grobogan",
-    "3316": "Kab. Blora",
-    "3317": "Kab. Rembang",
-    "3318": "Kab. Pati",
-    "3319": "Kab. Kudus",
-    "3320": "Kab. Jepara",
-    "3321": "Kab. Demak",
-    "3322": "Kab. Semarang",
-    "3323": "Kab. Temanggung",
-    "3324": "Kab. Kendal",
-    "3325": "Kab. Batang",
-    "3326": "Kab. Pekalongan",
-    "3327": "Kab. Pemalang",
-    "3328": "Kab. Tegal",
-    "3329": "Kab. Brebes",
-    "3371": "Kota Magelang",
-    "3372": "Kota Surakarta",
-    "3373": "Kota Salatiga",
-    "3374": "Kota Semarang",
-    "3375": "Kota Pekalongan",
-    "3376": "Kota Tegal",
-    "3401": "Kab. Kulon Progo",
-    "3402": "Kab. Bantul",
-    "3403": "Kab. Gunung Kidul",
-    "3404": "Kab. Sleman",
-    "3471": "Kota Yogyakarta",
-    "3501": "Kab. Pacitan",
-    "3502": "Kab. Ponorogo",
-    "3503": "Kab. Trenggalek",
-    "3504": "Kab. Tulungagung",
-    "3505": "Kab. Blitar",
-    "3506": "Kab. Kediri",
-    "3507": "Kab. Malang",
-    "3508": "Kab. Lumajang",
-    "3509": "Kab. Jember",
-    "3510": "Kab. Banyuwangi",
-    "3511": "Kab. Bondowoso",
-    "3512": "Kab. Situbondo",
-    "3513": "Kab. Probolinggo",
-    "3514": "Kab. Pasuruan",
-    "3515": "Kab. Sidoarjo",
-    "3516": "Kab. Mojokerto",
-    "3517": "Kab. Jombang",
-    "3518": "Kab. Nganjuk",
-    "3519": "Kab. Madiun",
-    "3520": "Kab. Magetan",
-    "3521": "Kab. Ngawi",
-    "3522": "Kab. Bojonegoro",
-    "3523": "Kab. Tuban",
-    "3524": "Kab. Lamongan",
-    "3525": "Kab. Gresik",
-    "3526": "Kab. Bangkalan",
-    "3527": "Kab. Sampang",
-    "3528": "Kab. Pamekasan",
-    "3529": "Kab. Sumenep",
-    "3571": "Kota Kediri",
-    "3572": "Kota Blitar",
-    "3573": "Kota Malang",
-    "3574": "Kota Probolinggo",
-    "3575": "Kota Pasuruan",
-    "3576": "Kota Mojokerto",
-    "3577": "Kota Madiun",
-    "3578": "Kota Surabaya",
-    "3579": "Kota Batu",
-    "3601": "Kab. Pandeglang",
-    "3602": "Kab. Lebak",
-    "3603": "Kab. Tangerang",
-    "3604": "Kab. Serang",
-    "3671": "Kota Tangerang",
-    "3672": "Kota Cilegon",
-    "3673": "Kota Serang",
-    "3674": "Kota Tangerang Selatan",
-    "5101": "Kab. Jembrana",
-    "5102": "Kab. Tabanan",
-    "5103": "Kab. Badung",
-    "5104": "Kab. Gianyar",
-    "5105": "Kab. Klungkung",
-    "5106": "Kab. Bangli",
-    "5107": "Kab. Karang Asem",
-    "5108": "Kab. Buleleng",
-    "5171": "Kota Denpasar",
-    "5201": "Kab. Lombok Barat",
-    "5202": "Kab. Lombok Tengah",
-    "5203": "Kab. Lombok Timur",
-    "5204": "Kab. Sumbawa",
-    "5205": "Kab. Dompu",
-    "5206": "Kab. Bima",
-    "5207": "Kab. Sumbawa Barat",
-    "5208": "Kab. Lombok Utara",
-    "5271": "Kota Mataram",
-    "5272": "Kota Bima",
-    "5301": "Kab. Sumba Barat",
-    "5302": "Kab. Sumba Timur",
-    "5303": "Kab. Kupang",
-    "5304": "Kab. Timor Tengah Selatan",
-    "5305": "Kab. Timor Tengah Utara",
-    "5306": "Kab. Belu",
-    "5307": "Kab. Alor",
-    "5308": "Kab. Lembata",
-    "5309": "Kab. Flores Timur",
-    "5310": "Kab. Sikka",
-    "5311": "Kab. Ende",
-    "5312": "Kab. Ngada",
-    "5313": "Kab. Manggarai",
-    "5314": "Kab. Rote Ndao",
-    "5315": "Kab. Manggarai Barat",
-    "5316": "Kab. Sumba Tengah",
-    "5317": "Kab. Sumba Barat Daya",
-    "5318": "Kab. Nagekeo",
-    "5319": "Kab. Manggarai Timur",
-    "5320": "Kab. Sabu Raijua",
-    "5321": "Kab. Malaka",
-    "5371": "Kota Kupang",
-    "6101": "Kab. Sambas",
-    "6102": "Kab. Bengkayang",
-    "6103": "Kab. Landak",
-    "6104": "Kab. Mempawah",
-    "6105": "Kab. Sanggau",
-    "6106": "Kab. Ketapang",
-    "6107": "Kab. Sintang",
-    "6108": "Kab. Kapuas Hulu",
-    "6109": "Kab. Sekadau",
-    "6110": "Kab. Melawi",
-    "6111": "Kab. Kayong Utara",
-    "6112": "Kab. Kubu Raya",
-    "6171": "Kota Pontianak",
-    "6172": "Kota Singkawang",
-    "6201": "Kab. Kotawaringin Barat",
-    "6202": "Kab. Kotawaringin Timur",
-    "6203": "Kab. Kapuas",
-    "6204": "Kab. Barito Selatan",
-    "6205": "Kab. Barito Utara",
-    "6206": "Kab. Sukamara",
-    "6207": "Kab. Lamandau",
-    "6208": "Kab. Seruyan",
-    "6209": "Kab. Katingan",
-    "6210": "Kab. Pulang Pisau",
-    "6211": "Kab. Gunung Mas",
-    "6212": "Kab. Barito Timur",
-    "6213": "Kab. Murung Raya",
-    "6271": "Kota Palangka Raya",
-    "6301": "Kab. Tanah Laut",
-    "6302": "Kab. Kota Baru",
-    "6303": "Kab. Banjar",
-    "6304": "Kab. Barito Kuala",
-    "6305": "Kab. Tapin",
-    "6306": "Kab. Hulu Sungai Selatan",
-    "6307": "Kab. Hulu Sungai Tengah",
-    "6308": "Kab. Hulu Sungai Utara",
-    "6309": "Kab. Tabalong",
-    "6310": "Kab. Tanah Bumbu",
-    "6311": "Kab. Balangan",
-    "6371": "Kota Banjarmasin",
-    "6372": "Kota Banjar Baru",
-    "6401": "Kab. Paser",
-    "6402": "Kab. Kutai Barat",
-    "6403": "Kab. Kutai Kartanegara",
-    "6404": "Kab. Kutai Timur",
-    "6405": "Kab. Berau",
-    "6409": "Kab. Penajam Paser Utara",
-    "6411": "Kab. Mahakam Hulu",
-    "6471": "Kota Balikpapan",
-    "6472": "Kota Samarinda",
-    "6474": "Kota Bontang",
-    "6501": "Kab. Malinau",
-    "6502": "Kab. Bulungan",
-    "6503": "Kab. Tana Tidung",
-    "6504": "Kab. Nunukan",
-    "6571": "Kota Tarakan",
-    "7101": "Kab. Bolaang Mongondow",
-    "7102": "Kab. Minahasa",
-    "7103": "Kab. Kepulauan Sangihe",
-    "7104": "Kab. Kepulauan Talaud",
-    "7105": "Kab. Minahasa Selatan",
-    "7106": "Kab. Minahasa Utara",
-    "7107": "Kab. Bolaang Mongondow Utara",
-    "7108": "Kab. Siau Tagulandang Biaro",
-    "7109": "Kab. Minahasa Tenggara",
-    "7110": "Kab. Bolaang Mongondow Selatan",
-    "7111": "Kab. Bolaang Mongondow Timur",
-    "7171": "Kota Manado",
-    "7172": "Kota Bitung",
-    "7173": "Kota Tomohon",
-    "7174": "Kota Kotamobagu",
-    "7201": "Kab. Banggai Kepulauan",
-    "7202": "Kab. Banggai",
-    "7203": "Kab. Morowali",
-    "7204": "Kab. Poso",
-    "7205": "Kab. Donggala",
-    "7206": "Kab. Toli-toli",
-    "7207": "Kab. Buol",
-    "7208": "Kab. Parigi Moutong",
-    "7209": "Kab. Tojo Una-una",
-    "7210": "Kab. Sigi",
-    "7211": "Kab. Banggai Laut",
-    "7212": "Kab. Morowali Utara",
-    "7271": "Kota Palu",
-    "7301": "Kab. Kepulauan Selayar",
-    "7302": "Kab. Bulukumba",
-    "7303": "Kab. Bantaeng",
-    "7304": "Kab. Jeneponto",
-    "7305": "Kab. Takalar",
-    "7306": "Kab. Gowa",
-    "7307": "Kab. Sinjai",
-    "7308": "Kab. Maros",
-    "7309": "Kab. Pangkajene Dan Kepulauan",
-    "7310": "Kab. Barru",
-    "7311": "Kab. Bone",
-    "7312": "Kab. Soppeng",
-    "7313": "Kab. Wajo",
-    "7314": "Kab. Sidenreng Rappang",
-    "7315": "Kab. Pinrang",
-    "7316": "Kab. Enrekang",
-    "7317": "Kab. Luwu",
-    "7318": "Kab. Tana Toraja",
-    "7322": "Kab. Luwu Utara",
-    "7325": "Kab. Luwu Timur",
-    "7326": "Kab. Toraja Utara",
-    "7371": "Kota Makassar",
-    "7372": "Kota Pare-pare",
-    "7373": "Kota Palopo",
-    "7401": "Kab. Buton",
-    "7402": "Kab. Muna",
-    "7403": "Kab. Konawe",
-    "7404": "Kab. Kolaka",
-    "7405": "Kab. Konawe Selatan",
-    "7406": "Kab. Bombana",
-    "7407": "Kab. Wakatobi",
-    "7408": "Kab. Kolaka Utara",
-    "7409": "Kab. Buton Utara",
-    "7410": "Kab. Konawe Utara",
-    "7411": "Kab. Kolaka Timur",
-    "7412": "Kab. Konawe Kepulauan",
-    "7413": "Kab. Muna Barat",
-    "7414": "Kab. Buton Tengah",
-    "7415": "Kab. Buton Selatan",
-    "7471": "Kota Kendari",
-    "7472": "Kota Baubau",
-    "7501": "Kab. Boalemo",
-    "7502": "Kab. Gorontalo",
-    "7503": "Kab. Pohuwato",
-    "7504": "Kab. Bone Bolango",
-    "7505": "Kab. Gorontalo Utara",
-    "7571": "Kota Gorontalo",
-    "7601": "Kab. Majene",
-    "7602": "Kab. Polewali Mandar",
-    "7603": "Kab. Mamasa",
-    "7604": "Kab. Mamuju",
-    "7605": "Kab. Mamuju Utara",
-    "7606": "Kab. Mamuju Tengah",
-    "8101": "Kab. Maluku Tenggara Barat",
-    "8102": "Kab. Maluku Tenggara",
-    "8103": "Kab. Maluku Tengah",
-    "8104": "Kab. Buru",
-    "8105": "Kab. Kepulauan Aru",
-    "8106": "Kab. Seram Bagian Barat",
-    "8107": "Kab. Seram Bagian Timur",
-    "8108": "Kab. Maluku Barat Daya",
-    "8109": "Kab. Buru Selatan",
-    "8171": "Kota Ambon",
-    "8172": "Kota Tual",
-    "8201": "Kab. Halmahera Barat",
-    "8202": "Kab. Halmahera Tengah",
-    "8203": "Kab. Kepulauan Sula",
-    "8204": "Kab. Halmahera Selatan",
-    "8205": "Kab. Halmahera Utara",
-    "8206": "Kab. Halmahera Timur",
-    "8207": "Kab. Pulau Morotai",
-    "8208": "Kab. Pulau Taliabu",
-    "8271": "Kota Ternate",
-    "8272": "Kota Tidore Kepulauan",
-    "9101": "Kab. Fak-fak",
-    "9102": "Kab. Kaimana",
-    "9103": "Kab. Teluk Wondama",
-    "9104": "Kab. Teluk Bintuni",
-    "9105": "Kab. Manokwari",
-    "9106": "Kab. Sorong Selatan",
-    "9107": "Kab. Sorong",
-    "9108": "Kab. Raja Ampat",
-    "9109": "Kab. Tambrauw",
-    "9110": "Kab. Maybrat",
-    "9111": "Kab. Manokwari Selatan",
-    "9112": "Kab. Pegunungan Arfak",
-    "9171": "Kota Sorong",
-    "9401": "Kab. Merauke",
-    "9402": "Kab. Jayawijaya",
-    "9403": "Kab. Jayapura",
-    "9404": "Kab. Nabire",
-    "9408": "Kab. Kepulauan Yapen",
-    "9409": "Kab. Biak Numfor",
-    "9410": "Kab. Paniai",
-    "9411": "Kab. Puncak Jaya",
-    "9412": "Kab. Mimika",
-    "9413": "Kab. Boven Digoel",
-    "9414": "Kab. Mappi",
-    "9415": "Kab. Asmat",
-    "9416": "Kab. Yahukimo",
-    "9417": "Kab. Pegunungan Bintang",
-    "9418": "Kab. Tolikara",
-    "9419": "Kab. Sarmi",
-    "9420": "Kab. Keerom",
-    "9426": "Kab. Waropen",
-    "9427": "Kab. Supiori",
-    "9428": "Kab. Mamberamo Raya",
-    "9429": "Kab. Nduga",
-    "9430": "Kab. Lanny Jaya",
-    "9431": "Kab. Mamberamo Tengah",
-    "9432": "Kab. Yalimo",
-    "9433": "Kab. Puncak",
-    "9434": "Kab. Dogiyai",
-    "9435": "Kab. Intan Jaya",
-    "9436": "Kab. Deiyai",
-    "9471": "Kota Jayapura"
-};
+            "1101": "Kab. Simeulue",
+            "1102": "Kab. Aceh Singkil",
+            "1103": "Kab. Aceh Selatan",
+            "1104": "Kab. Aceh Tenggara",
+            "1105": "Kab. Aceh Timur",
+            "1106": "Kab. Aceh Tengah",
+            "1107": "Kab. Aceh Barat",
+            "1108": "Kab. Aceh Besar",
+            "1109": "Kab. Pidie",
+            "1110": "Kab. Bireuen",
+            "1111": "Kab. Aceh Utara",
+            "1112": "Kab. Aceh Barat Daya",
+            "1113": "Kab. Gayo Lues",
+            "1114": "Kab. Aceh Tamiang",
+            "1115": "Kab. Nagan Raya",
+            "1116": "Kab. Aceh Jaya",
+            "1117": "Kab. Bener Meriah",
+            "1118": "Kab. Pidie Jaya",
+            "1171": "Kota Banda Aceh",
+            "1172": "Kota Sabang",
+            "1173": "Kota Langsa",
+            "1174": "Kota Lhokseumawe",
+            "1175": "Kota Subulussalam",
+            "1201": "Kab. Nias",
+            "1202": "Kab. Mandailing Natal",
+            "1203": "Kab. Tapanuli Selatan",
+            "1204": "Kab. Tapanuli Tengah",
+            "1205": "Kab. Tapanuli Utara",
+            "1206": "Kab. Toba Samosir",
+            "1207": "Kab. Labuhan Batu",
+            "1208": "Kab. Asahan",
+            "1209": "Kab. Simalungun",
+            "1210": "Kab. Dairi",
+            "1211": "Kab. Karo",
+            "1212": "Kab. Deli Serdang",
+            "1213": "Kab. Langkat",
+            "1214": "Kab. Nias Selatan",
+            "1215": "Kab. Humbang Hasundutan",
+            "1216": "Kab. Pakpak Bharat",
+            "1217": "Kab. Samosir",
+            "1218": "Kab. Serdang Bedagai",
+            "1219": "Kab. Batu Bara",
+            "1220": "Kab. Padang Lawas Utara",
+            "1221": "Kab. Padang Lawas",
+            "1222": "Kab. Labuhan Batu Selatan",
+            "1223": "Kab. Labuhan Batu Utara",
+            "1224": "Kab. Nias Utara",
+            "1225": "Kab. Nias Barat",
+            "1271": "Kota Sibolga",
+            "1272": "Kota Tanjung Balai",
+            "1273": "Kota Pematang Siantar",
+            "1274": "Kota Tebing Tinggi",
+            "1275": "Kota Medan",
+            "1276": "Kota Binjai",
+            "1277": "Kota Padang Sidempuan",
+            "1278": "Kota Gunungsitoli",
+            "1301": "Kab. Kepulauan Mentawai",
+            "1302": "Kab. Pesisir Selatan",
+            "1303": "Kab. Solok",
+            "1304": "Kab. Sijunjung",
+            "1305": "Kab. Tanah Datar",
+            "1306": "Kab. Padang Pariaman",
+            "1307": "Kab. Agam",
+            "1308": "Kab. Lima Puluh Kota",
+            "1309": "Kab. Pasaman",
+            "1310": "Kab. Solok Selatan",
+            "1311": "Kab. Dharmasraya",
+            "1312": "Kab. Pasaman Barat",
+            "1371": "Kota Padang",
+            "1372": "Kota Solok",
+            "1373": "Kota Sawah Lunto",
+            "1374": "Kota Padang Panjang",
+            "1375": "Kota Bukittinggi",
+            "1376": "Kota Payakumbuh",
+            "1377": "Kota Pariaman",
+            "1401": "Kab. Kuantan Singingi",
+            "1402": "Kab. Indragiri Hulu",
+            "1403": "Kab. Indragiri Hilir",
+            "1404": "Kab. Pelalawan",
+            "1405": "Kab. Siak",
+            "1406": "Kab. Kampar",
+            "1407": "Kab. Rokan Hulu",
+            "1408": "Kab. Bengkalis",
+            "1409": "Kab. Rokan Hilir",
+            "1410": "Kab. Kepulauan Meranti",
+            "1471": "Kota Pekanbaru",
+            "1473": "Kota Dumai",
+            "1501": "Kab. Kerinci",
+            "1502": "Kab. Merangin",
+            "1503": "Kab. Sarolangun",
+            "1504": "Kab. Batang Hari",
+            "1505": "Kab. Muaro Jambi",
+            "1506": "Kab. Tanjung Jabung Timur",
+            "1507": "Kab. Tanjung Jabung Barat",
+            "1508": "Kab. Tebo",
+            "1509": "Kab. Bungo",
+            "1571": "Kota Jambi",
+            "1572": "Kota Sungai Penuh",
+            "1601": "Kab. Ogan Komering Ulu",
+            "1602": "Kab. Ogan Komering Ilir",
+            "1603": "Kab. Muara Enim",
+            "1604": "Kab. Lahat",
+            "1605": "Kab. Musi Rawas",
+            "1606": "Kab. Musi Banyu Asin",
+            "1607": "Kab. Banyu Asin",
+            "1608": "Kab. Ogan Komering Ulu Selatan",
+            "1609": "Kab. Ogan Komering Ulu Timur",
+            "1610": "Kab. Ogan Ilir",
+            "1611": "Kab. Empat Lawang",
+            "1612": "Kab. Penukal Abab Lematang Ilir",
+            "1613": "Kab. Musi Rawas Utara",
+            "1671": "Kota Palembang",
+            "1672": "Kota Prabumulih",
+            "1673": "Kota Pagar Alam",
+            "1674": "Kota Lubuk Linggau",
+            "1701": "Kab. Bengkulu Selatan",
+            "1702": "Kab. Rejang Lebong",
+            "1703": "Kab. Bengkulu Utara",
+            "1704": "Kab. Kaur",
+            "1705": "Kab. Seluma",
+            "1706": "Kab. Mukomuko",
+            "1707": "Kab. Lebong",
+            "1708": "Kab. Kepahiang",
+            "1709": "Kab. Bengkulu Tengah",
+            "1771": "Kota Bengkulu",
+            "1801": "Kab. Lampung Barat",
+            "1802": "Kab. Tanggamus",
+            "1803": "Kab. Lampung Selatan",
+            "1804": "Kab. Lampung Timur",
+            "1805": "Kab. Lampung Tengah",
+            "1806": "Kab. Lampung Utara",
+            "1807": "Kab. Way Kanan",
+            "1808": "Kab. Tulangbawang",
+            "1809": "Kab. Pesawaran",
+            "1810": "Kab. Pringsewu",
+            "1811": "Kab. Mesuji",
+            "1812": "Kab. Tulang Bawang Barat",
+            "1813": "Kab. Pesisir Barat",
+            "1871": "Kota Bandar Lampung",
+            "1872": "Kota Metro",
+            "1901": "Kab. Bangka",
+            "1902": "Kab. Belitung",
+            "1903": "Kab. Bangka Barat",
+            "1904": "Kab. Bangka Tengah",
+            "1905": "Kab. Bangka Selatan",
+            "1906": "Kab. Belitung Timur",
+            "1971": "Kota Pangkal Pinang",
+            "2101": "Kab. Karimun",
+            "2102": "Kab. Bintan",
+            "2103": "Kab. Natuna",
+            "2104": "Kab. Lingga",
+            "2105": "Kab. Kepulauan Anambas",
+            "2171": "Kota Batam",
+            "2172": "Kota Tanjung Pinang",
+            "3101": "Kab. Kepulauan Seribu",
+            "3171": "Kota Jakarta Selatan",
+            "3172": "Kota Jakarta Timur",
+            "3173": "Kota Jakarta Pusat",
+            "3174": "Kota Jakarta Barat",
+            "3175": "Kota Jakarta Utara",
+            "3201": "Kab. Bogor",
+            "3202": "Kab. Sukabumi",
+            "3203": "Kab. Cianjur",
+            "3204": "Kab. Bandung",
+            "3205": "Kab. Garut",
+            "3206": "Kab. Tasikmalaya",
+            "3207": "Kab. Ciamis",
+            "3208": "Kab. Kuningan",
+            "3209": "Kab. Cirebon",
+            "3210": "Kab. Majalengka",
+            "3211": "Kab. Sumedang",
+            "3212": "Kab. Indramayu",
+            "3213": "Kab. Subang",
+            "3214": "Kab. Purwakarta",
+            "3215": "Kab. Karawang",
+            "3216": "Kab. Bekasi",
+            "3217": "Kab. Bandung Barat",
+            "3218": "Kab. Pangandaran",
+            "3271": "Kota Bogor",
+            "3272": "Kota Sukabumi",
+            "3273": "Kota Bandung",
+            "3274": "Kota Cirebon",
+            "3275": "Kota Bekasi",
+            "3276": "Kota Depok",
+            "3277": "Kota Cimahi",
+            "3278": "Kota Tasikmalaya",
+            "3279": "Kota Banjar",
+            "3301": "Kab. Cilacap",
+            "3302": "Kab. Banyumas",
+            "3303": "Kab. Purbalingga",
+            "3304": "Kab. Banjarnegara",
+            "3305": "Kab. Kebumen",
+            "3306": "Kab. Purworejo",
+            "3307": "Kab. Wonosobo",
+            "3308": "Kab. Magelang",
+            "3309": "Kab. Boyolali",
+            "3310": "Kab. Klaten",
+            "3311": "Kab. Sukoharjo",
+            "3312": "Kab. Wonogiri",
+            "3313": "Kab. Karanganyar",
+            "3314": "Kab. Sragen",
+            "3315": "Kab. Grobogan",
+            "3316": "Kab. Blora",
+            "3317": "Kab. Rembang",
+            "3318": "Kab. Pati",
+            "3319": "Kab. Kudus",
+            "3320": "Kab. Jepara",
+            "3321": "Kab. Demak",
+            "3322": "Kab. Semarang",
+            "3323": "Kab. Temanggung",
+            "3324": "Kab. Kendal",
+            "3325": "Kab. Batang",
+            "3326": "Kab. Pekalongan",
+            "3327": "Kab. Pemalang",
+            "3328": "Kab. Tegal",
+            "3329": "Kab. Brebes",
+            "3371": "Kota Magelang",
+            "3372": "Kota Surakarta",
+            "3373": "Kota Salatiga",
+            "3374": "Kota Semarang",
+            "3375": "Kota Pekalongan",
+            "3376": "Kota Tegal",
+            "3401": "Kab. Kulon Progo",
+            "3402": "Kab. Bantul",
+            "3403": "Kab. Gunung Kidul",
+            "3404": "Kab. Sleman",
+            "3471": "Kota Yogyakarta",
+            "3501": "Kab. Pacitan",
+            "3502": "Kab. Ponorogo",
+            "3503": "Kab. Trenggalek",
+            "3504": "Kab. Tulungagung",
+            "3505": "Kab. Blitar",
+            "3506": "Kab. Kediri",
+            "3507": "Kab. Malang",
+            "3508": "Kab. Lumajang",
+            "3509": "Kab. Jember",
+            "3510": "Kab. Banyuwangi",
+            "3511": "Kab. Bondowoso",
+            "3512": "Kab. Situbondo",
+            "3513": "Kab. Probolinggo",
+            "3514": "Kab. Pasuruan",
+            "3515": "Kab. Sidoarjo",
+            "3516": "Kab. Mojokerto",
+            "3517": "Kab. Jombang",
+            "3518": "Kab. Nganjuk",
+            "3519": "Kab. Madiun",
+            "3520": "Kab. Magetan",
+            "3521": "Kab. Ngawi",
+            "3522": "Kab. Bojonegoro",
+            "3523": "Kab. Tuban",
+            "3524": "Kab. Lamongan",
+            "3525": "Kab. Gresik",
+            "3526": "Kab. Bangkalan",
+            "3527": "Kab. Sampang",
+            "3528": "Kab. Pamekasan",
+            "3529": "Kab. Sumenep",
+            "3571": "Kota Kediri",
+            "3572": "Kota Blitar",
+            "3573": "Kota Malang",
+            "3574": "Kota Probolinggo",
+            "3575": "Kota Pasuruan",
+            "3576": "Kota Mojokerto",
+            "3577": "Kota Madiun",
+            "3578": "Kota Surabaya",
+            "3579": "Kota Batu",
+            "3601": "Kab. Pandeglang",
+            "3602": "Kab. Lebak",
+            "3603": "Kab. Tangerang",
+            "3604": "Kab. Serang",
+            "3671": "Kota Tangerang",
+            "3672": "Kota Cilegon",
+            "3673": "Kota Serang",
+            "3674": "Kota Tangerang Selatan",
+            "5101": "Kab. Jembrana",
+            "5102": "Kab. Tabanan",
+            "5103": "Kab. Badung",
+            "5104": "Kab. Gianyar",
+            "5105": "Kab. Klungkung",
+            "5106": "Kab. Bangli",
+            "5107": "Kab. Karang Asem",
+            "5108": "Kab. Buleleng",
+            "5171": "Kota Denpasar",
+            "5201": "Kab. Lombok Barat",
+            "5202": "Kab. Lombok Tengah",
+            "5203": "Kab. Lombok Timur",
+            "5204": "Kab. Sumbawa",
+            "5205": "Kab. Dompu",
+            "5206": "Kab. Bima",
+            "5207": "Kab. Sumbawa Barat",
+            "5208": "Kab. Lombok Utara",
+            "5271": "Kota Mataram",
+            "5272": "Kota Bima",
+            "5301": "Kab. Sumba Barat",
+            "5302": "Kab. Sumba Timur",
+            "5303": "Kab. Kupang",
+            "5304": "Kab. Timor Tengah Selatan",
+            "5305": "Kab. Timor Tengah Utara",
+            "5306": "Kab. Belu",
+            "5307": "Kab. Alor",
+            "5308": "Kab. Lembata",
+            "5309": "Kab. Flores Timur",
+            "5310": "Kab. Sikka",
+            "5311": "Kab. Ende",
+            "5312": "Kab. Ngada",
+            "5313": "Kab. Manggarai",
+            "5314": "Kab. Rote Ndao",
+            "5315": "Kab. Manggarai Barat",
+            "5316": "Kab. Sumba Tengah",
+            "5317": "Kab. Sumba Barat Daya",
+            "5318": "Kab. Nagekeo",
+            "5319": "Kab. Manggarai Timur",
+            "5320": "Kab. Sabu Raijua",
+            "5321": "Kab. Malaka",
+            "5371": "Kota Kupang",
+            "6101": "Kab. Sambas",
+            "6102": "Kab. Bengkayang",
+            "6103": "Kab. Landak",
+            "6104": "Kab. Mempawah",
+            "6105": "Kab. Sanggau",
+            "6106": "Kab. Ketapang",
+            "6107": "Kab. Sintang",
+            "6108": "Kab. Kapuas Hulu",
+            "6109": "Kab. Sekadau",
+            "6110": "Kab. Melawi",
+            "6111": "Kab. Kayong Utara",
+            "6112": "Kab. Kubu Raya",
+            "6171": "Kota Pontianak",
+            "6172": "Kota Singkawang",
+            "6201": "Kab. Kotawaringin Barat",
+            "6202": "Kab. Kotawaringin Timur",
+            "6203": "Kab. Kapuas",
+            "6204": "Kab. Barito Selatan",
+            "6205": "Kab. Barito Utara",
+            "6206": "Kab. Sukamara",
+            "6207": "Kab. Lamandau",
+            "6208": "Kab. Seruyan",
+            "6209": "Kab. Katingan",
+            "6210": "Kab. Pulang Pisau",
+            "6211": "Kab. Gunung Mas",
+            "6212": "Kab. Barito Timur",
+            "6213": "Kab. Murung Raya",
+            "6271": "Kota Palangka Raya",
+            "6301": "Kab. Tanah Laut",
+            "6302": "Kab. Kota Baru",
+            "6303": "Kab. Banjar",
+            "6304": "Kab. Barito Kuala",
+            "6305": "Kab. Tapin",
+            "6306": "Kab. Hulu Sungai Selatan",
+            "6307": "Kab. Hulu Sungai Tengah",
+            "6308": "Kab. Hulu Sungai Utara",
+            "6309": "Kab. Tabalong",
+            "6310": "Kab. Tanah Bumbu",
+            "6311": "Kab. Balangan",
+            "6371": "Kota Banjarmasin",
+            "6372": "Kota Banjar Baru",
+            "6401": "Kab. Paser",
+            "6402": "Kab. Kutai Barat",
+            "6403": "Kab. Kutai Kartanegara",
+            "6404": "Kab. Kutai Timur",
+            "6405": "Kab. Berau",
+            "6409": "Kab. Penajam Paser Utara",
+            "6411": "Kab. Mahakam Hulu",
+            "6471": "Kota Balikpapan",
+            "6472": "Kota Samarinda",
+            "6474": "Kota Bontang",
+            "6501": "Kab. Malinau",
+            "6502": "Kab. Bulungan",
+            "6503": "Kab. Tana Tidung",
+            "6504": "Kab. Nunukan",
+            "6571": "Kota Tarakan",
+            "7101": "Kab. Bolaang Mongondow",
+            "7102": "Kab. Minahasa",
+            "7103": "Kab. Kepulauan Sangihe",
+            "7104": "Kab. Kepulauan Talaud",
+            "7105": "Kab. Minahasa Selatan",
+            "7106": "Kab. Minahasa Utara",
+            "7107": "Kab. Bolaang Mongondow Utara",
+            "7108": "Kab. Siau Tagulandang Biaro",
+            "7109": "Kab. Minahasa Tenggara",
+            "7110": "Kab. Bolaang Mongondow Selatan",
+            "7111": "Kab. Bolaang Mongondow Timur",
+            "7171": "Kota Manado",
+            "7172": "Kota Bitung",
+            "7173": "Kota Tomohon",
+            "7174": "Kota Kotamobagu",
+            "7201": "Kab. Banggai Kepulauan",
+            "7202": "Kab. Banggai",
+            "7203": "Kab. Morowali",
+            "7204": "Kab. Poso",
+            "7205": "Kab. Donggala",
+            "7206": "Kab. Toli-toli",
+            "7207": "Kab. Buol",
+            "7208": "Kab. Parigi Moutong",
+            "7209": "Kab. Tojo Una-una",
+            "7210": "Kab. Sigi",
+            "7211": "Kab. Banggai Laut",
+            "7212": "Kab. Morowali Utara",
+            "7271": "Kota Palu",
+            "7301": "Kab. Kepulauan Selayar",
+            "7302": "Kab. Bulukumba",
+            "7303": "Kab. Bantaeng",
+            "7304": "Kab. Jeneponto",
+            "7305": "Kab. Takalar",
+            "7306": "Kab. Gowa",
+            "7307": "Kab. Sinjai",
+            "7308": "Kab. Maros",
+            "7309": "Kab. Pangkajene Dan Kepulauan",
+            "7310": "Kab. Barru",
+            "7311": "Kab. Bone",
+            "7312": "Kab. Soppeng",
+            "7313": "Kab. Wajo",
+            "7314": "Kab. Sidenreng Rappang",
+            "7315": "Kab. Pinrang",
+            "7316": "Kab. Enrekang",
+            "7317": "Kab. Luwu",
+            "7318": "Kab. Tana Toraja",
+            "7322": "Kab. Luwu Utara",
+            "7325": "Kab. Luwu Timur",
+            "7326": "Kab. Toraja Utara",
+            "7371": "Kota Makassar",
+            "7372": "Kota Pare-pare",
+            "7373": "Kota Palopo",
+            "7401": "Kab. Buton",
+            "7402": "Kab. Muna",
+            "7403": "Kab. Konawe",
+            "7404": "Kab. Kolaka",
+            "7405": "Kab. Konawe Selatan",
+            "7406": "Kab. Bombana",
+            "7407": "Kab. Wakatobi",
+            "7408": "Kab. Kolaka Utara",
+            "7409": "Kab. Buton Utara",
+            "7410": "Kab. Konawe Utara",
+            "7411": "Kab. Kolaka Timur",
+            "7412": "Kab. Konawe Kepulauan",
+            "7413": "Kab. Muna Barat",
+            "7414": "Kab. Buton Tengah",
+            "7415": "Kab. Buton Selatan",
+            "7471": "Kota Kendari",
+            "7472": "Kota Baubau",
+            "7501": "Kab. Boalemo",
+            "7502": "Kab. Gorontalo",
+            "7503": "Kab. Pohuwato",
+            "7504": "Kab. Bone Bolango",
+            "7505": "Kab. Gorontalo Utara",
+            "7571": "Kota Gorontalo",
+            "7601": "Kab. Majene",
+            "7602": "Kab. Polewali Mandar",
+            "7603": "Kab. Mamasa",
+            "7604": "Kab. Mamuju",
+            "7605": "Kab. Mamuju Utara",
+            "7606": "Kab. Mamuju Tengah",
+            "8101": "Kab. Maluku Tenggara Barat",
+            "8102": "Kab. Maluku Tenggara",
+            "8103": "Kab. Maluku Tengah",
+            "8104": "Kab. Buru",
+            "8105": "Kab. Kepulauan Aru",
+            "8106": "Kab. Seram Bagian Barat",
+            "8107": "Kab. Seram Bagian Timur",
+            "8108": "Kab. Maluku Barat Daya",
+            "8109": "Kab. Buru Selatan",
+            "8171": "Kota Ambon",
+            "8172": "Kota Tual",
+            "8201": "Kab. Halmahera Barat",
+            "8202": "Kab. Halmahera Tengah",
+            "8203": "Kab. Kepulauan Sula",
+            "8204": "Kab. Halmahera Selatan",
+            "8205": "Kab. Halmahera Utara",
+            "8206": "Kab. Halmahera Timur",
+            "8207": "Kab. Pulau Morotai",
+            "8208": "Kab. Pulau Taliabu",
+            "8271": "Kota Ternate",
+            "8272": "Kota Tidore Kepulauan",
+            "9101": "Kab. Fak-fak",
+            "9102": "Kab. Kaimana",
+            "9103": "Kab. Teluk Wondama",
+            "9104": "Kab. Teluk Bintuni",
+            "9105": "Kab. Manokwari",
+            "9106": "Kab. Sorong Selatan",
+            "9107": "Kab. Sorong",
+            "9108": "Kab. Raja Ampat",
+            "9109": "Kab. Tambrauw",
+            "9110": "Kab. Maybrat",
+            "9111": "Kab. Manokwari Selatan",
+            "9112": "Kab. Pegunungan Arfak",
+            "9171": "Kota Sorong",
+            "9401": "Kab. Merauke",
+            "9402": "Kab. Jayawijaya",
+            "9403": "Kab. Jayapura",
+            "9404": "Kab. Nabire",
+            "9408": "Kab. Kepulauan Yapen",
+            "9409": "Kab. Biak Numfor",
+            "9410": "Kab. Paniai",
+            "9411": "Kab. Puncak Jaya",
+            "9412": "Kab. Mimika",
+            "9413": "Kab. Boven Digoel",
+            "9414": "Kab. Mappi",
+            "9415": "Kab. Asmat",
+            "9416": "Kab. Yahukimo",
+            "9417": "Kab. Pegunungan Bintang",
+            "9418": "Kab. Tolikara",
+            "9419": "Kab. Sarmi",
+            "9420": "Kab. Keerom",
+            "9426": "Kab. Waropen",
+            "9427": "Kab. Supiori",
+            "9428": "Kab. Mamberamo Raya",
+            "9429": "Kab. Nduga",
+            "9430": "Kab. Lanny Jaya",
+            "9431": "Kab. Mamberamo Tengah",
+            "9432": "Kab. Yalimo",
+            "9433": "Kab. Puncak",
+            "9434": "Kab. Dogiyai",
+            "9435": "Kab. Intan Jaya",
+            "9436": "Kab. Deiyai",
+            "9471": "Kota Jayapura"
+        };
 
         const INDONESIAN_DAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
         const INDONESIAN_MONTHS = [
-            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
         ];
 
         // SVGs helper components
         const IconSun = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sun"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>
         );
         const IconMoon = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
         );
         const IconCheck = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check text-emerald-500"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check text-emerald-500"><polyline points="20 6 9 17 4 12" /></svg>
         );
         const IconX = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x text-rose-500"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x text-rose-500"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
         );
         const IconSparkles = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-brand-500 dark:text-brand-400"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/><path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z"/><path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-brand-500 dark:text-brand-400"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z" /><path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z" /><path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z" /></svg>
         );
         const IconShieldAlert = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield-alert text-amber-500"><path d="M20 13c0 5-3.5 7.5-7.66 9.7a1 1 0 0 1-.68 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 .76-.97l8-2a1 1 0 0 1 .48 0l8 2A1 1 0 0 1 20 6v7z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield-alert text-amber-500"><path d="M20 13c0 5-3.5 7.5-7.66 9.7a1 1 0 0 1-.68 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 .76-.97l8-2a1 1 0 0 1 .48 0l8 2A1 1 0 0 1 20 6v7z" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>
         );
         const IconUpload = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-upload"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-upload"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
         );
         const IconTrash2 = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>
         );
         const IconCopy = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
         );
         const IconDownload = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
         );
         const IconSearch = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
         );
         const IconUsers = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users text-indigo-500"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users text-indigo-500"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
         );
         const IconBriefcase = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-briefcase text-slate-400"><path d="M15 2H9a2 2 0 0 0-2 2v2H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-4V4a2 2 0 0 0-2-2z"/><path d="M7 6h10"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-briefcase text-slate-400"><path d="M15 2H9a2 2 0 0 0-2 2v2H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-4V4a2 2 0 0 0-2-2z" /><path d="M7 6h10" /></svg>
         );
         const IconMapPin = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin text-rose-500"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin text-rose-500"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
         );
         const IconInfo = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info text-blue-500"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info text-blue-500"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
         );
         const IconTrendingUp = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up text-emerald-500"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up text-emerald-500"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></svg>
         );
         const IconBookOpen = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-book-open text-brand-500"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-book-open text-brand-500"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
         );
 
         // Helper calculations
@@ -797,7 +814,7 @@
 
             const provCode = cleanNik.substring(0, 2);
             const provName = PROVINCE_MAP[provCode];
-            
+
             if (!provName) {
                 return {
                     nik: cleanNik,
@@ -882,7 +899,7 @@
                     return {
                         nik: cleanNik,
                         isValid: false,
-                        errorReason: `Bulan ${INDONESIAN_MONTHS[mm-1]} ${fullYear} hanya memiliki ${daysInMonth} hari (ditemukan ${dd})`,
+                        errorReason: `Bulan ${INDONESIAN_MONTHS[mm - 1]} ${fullYear} hanya memiliki ${daysInMonth} hari (ditemukan ${dd})`,
                         provinsi: provName,
                         provinsiCode: provCode,
                         tanggalLahirStr: '-',
@@ -969,7 +986,7 @@
             const [activeTab, setActiveTab] = useState('table'); // 'table' | 'analytics'
             const [isDragging, setIsDragging] = useState(false);
             const [selectedNikDetails, setSelectedNikDetails] = useState(null);
-            
+
             // Filters & Search & Sort states
             const [searchQuery, setSearchQuery] = useState('');
             const [filterGender, setFilterGender] = useState('all');
@@ -1061,7 +1078,7 @@
                     '9999990101900001', // Gagal: provinsi salah
                     '3172013211900001'  // Gagal: tanggal 32
                 ].join('\n');
-                
+
                 setRawInput(demoList);
                 const results = demoList.split('\n').map(line => parseNik(line));
                 setProcessedData(results);
@@ -1104,7 +1121,7 @@
                 const invalid = total - valid;
                 const male = processedData.filter(d => d.isValid && d.jenisKelamin === 'Laki-Laki').length;
                 const female = processedData.filter(d => d.isValid && d.jenisKelamin === 'Perempuan').length;
-                
+
                 const validAges = processedData.filter(d => d.isValid).map(d => d.umurDetail.years);
                 const avgAge = validAges.length > 0 ? Math.round(validAges.reduce((a, b) => a + b, 0) / validAges.length) : 0;
 
@@ -1129,8 +1146,8 @@
                 // Search query
                 if (searchQuery.trim() !== '') {
                     const query = searchQuery.toLowerCase().trim();
-                    data = data.filter(d => 
-                        d.nik.toLowerCase().includes(query) || 
+                    data = data.filter(d =>
+                        d.nik.toLowerCase().includes(query) ||
                         d.provinsi.toLowerCase().includes(query) ||
                         (d.kabupaten && d.kabupaten.toLowerCase().includes(query)) ||
                         d.tanggalLahirStr.toLowerCase().includes(query) ||
@@ -1203,9 +1220,9 @@
                     const shioStr = d.isValid ? `${d.shio.emoji} ${d.shio.name}` : '-';
                     return `${index + 1}\t${d.nik}\t${d.provinsi}\t${d.kabupaten}\t${d.tanggalLahirStr}\t${d.dayOfWeek}\t${d.jenisKelamin}\t${ageStr}\t${zodiacStr}\t${shioStr}\t${status}`;
                 }).join('\n');
-                
+
                 const fullText = header + rows;
-                
+
                 navigator.clipboard.writeText(fullText)
                     .then(() => triggerNotification('Salin ke Excel Berhasil! Format tab-separated siap di-paste ke Excel.'))
                     .catch(() => triggerNotification('Gagal menyalin data.', 'error'));
@@ -1219,7 +1236,7 @@
                 }
                 const headers = ['No', 'NIK', 'Provinsi', 'Kabupaten/Kota', 'Tanggal Lahir', 'Hari Lahir', 'Jenis Kelamin', 'Umur', 'Zodiac', 'Shio', 'Status'];
                 const csvRows = [headers.join(',')];
-                
+
                 processedData.forEach((d, idx) => {
                     const row = [
                         idx + 1,
@@ -1236,7 +1253,7 @@
                     ];
                     csvRows.push(row.join(','));
                 });
-                
+
                 const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
@@ -1267,9 +1284,9 @@
             // Charts data calculations
             const chartsData = useMemo(() => {
                 if (processedData.length === 0) return null;
-                
+
                 const validData = processedData.filter(d => d.isValid);
-                
+
                 // Age Groups
                 let ageGroups = {
                     'Anak-anak (<12)': 0,
@@ -1278,7 +1295,7 @@
                     'Setengah Baya (46-60)': 0,
                     'Lansia (>60)': 0
                 };
-                
+
                 // Provinces Frequency
                 let provincesFreq = {};
 
@@ -1302,7 +1319,7 @@
 
             // Interactive NIK structure explorer hover states
             const [hoveredSegment, setHoveredSegment] = useState(null);
-            
+
             return (
                 <div className="flex flex-col flex-grow w-full">
                     {/* Header */}
@@ -1310,7 +1327,7 @@
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
                                 <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-fingerprint"><path d="M12 10a2 2 0 0 0-2 2c0 .991-.192 1.355-.384 1.718-.192.363-.448.845-.448 1.48C9.168 16.48 9.5 18 12 18s2.832-1.52 2.832-2.8c0-.636-.256-1.118-.448-1.48-.192-.363-.384-.727-.384-1.718a2 2 0 0 0-2-2z"/><path d="M8 12a4 4 0 0 1 8 0c0 .523-.213.91-.424 1.29-.212.38-.466.837-.466 1.51C15.11 16.51 14 19 12 19s-3.11-2.49-3.11-4.2c0-.673-.254-1.13-.466-1.51C8.213 12.91 8 12.523 8 12z"/><path d="M6 12a6 6 0 0 1 12 0c0 .034 0 .067-.002.1a3.298 3.298 0 0 0-.256-.039C16.924 11.944 16.5 11.5 16.5 11a4.5 4.5 0 0 0-9 0c0 .5-.424.944-1.242 1.061A3.298 3.298 0 0 0 6 12z"/><path d="M3 10.27c.18-.517.45-1.002.81-1.437A9.01 9.01 0 0 1 12 6a9.01 9.01 0 0 1 8.19 2.833c.36.435.63.92.81 1.437"/><path d="M14 21.9a10 10 0 0 1-10.9-4.7"/><path d="M20 17.2a10 10 0 0 0-1.7-8.3"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-fingerprint"><path d="M12 10a2 2 0 0 0-2 2c0 .991-.192 1.355-.384 1.718-.192.363-.448.845-.448 1.48C9.168 16.48 9.5 18 12 18s2.832-1.52 2.832-2.8c0-.636-.256-1.118-.448-1.48-.192-.363-.384-.727-.384-1.718a2 2 0 0 0-2-2z" /><path d="M8 12a4 4 0 0 1 8 0c0 .523-.213.91-.424 1.29-.212.38-.466.837-.466 1.51C15.11 16.51 14 19 12 19s-3.11-2.49-3.11-4.2c0-.673-.254-1.13-.466-1.51C8.213 12.91 8 12.523 8 12z" /><path d="M6 12a6 6 0 0 1 12 0c0 .034 0 .067-.002.1a3.298 3.298 0 0 0-.256-.039C16.924 11.944 16.5 11.5 16.5 11a4.5 4.5 0 0 0-9 0c0 .5-.424.944-1.242 1.061A3.298 3.298 0 0 0 6 12z" /><path d="M3 10.27c.18-.517.45-1.002.81-1.437A9.01 9.01 0 0 1 12 6a9.01 9.01 0 0 1 8.19 2.833c.36.435.63.92.81 1.437" /><path d="M14 21.9a10 10 0 0 1-10.9-4.7" /><path d="M20 17.2a10 10 0 0 0-1.7-8.3" /></svg>
                                 </div>
                                 <div>
                                     <h1 className="text-base font-extrabold tracking-tight bg-gradient-to-r from-brand-600 to-indigo-500 dark:from-brand-400 dark:to-indigo-300 bg-clip-text text-transparent">
@@ -1321,13 +1338,13 @@
                                     </p>
                                 </div>
                             </div>
-                            
+
                             <div className="flex items-center gap-4">
                                 <div className="hidden sm:flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs px-2.5 py-1 rounded-full font-medium border border-emerald-500/20">
                                     <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
                                     100% Client-Side / Offline
                                 </div>
-                                <button 
+                                <button
                                     onClick={toggleDarkMode}
                                     className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
                                     aria-label="Toggle theme"
@@ -1341,19 +1358,18 @@
 
                     {/* Main Content */}
                     <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-                        
+
                         {/* Notification Toasts */}
                         <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-md w-full">
                             {notifications.map(n => (
-                                <div 
-                                    key={n.id} 
-                                    className={`p-4 rounded-xl shadow-lg border transition-all duration-300 flex items-start gap-3 animate-slide-in ${
-                                        n.type === 'error' 
-                                            ? 'bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/60 dark:border-rose-900/60 dark:text-rose-200' 
-                                            : n.type === 'info'
+                                <div
+                                    key={n.id}
+                                    className={`p-4 rounded-xl shadow-lg border transition-all duration-300 flex items-start gap-3 animate-slide-in ${n.type === 'error'
+                                        ? 'bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/60 dark:border-rose-900/60 dark:text-rose-200'
+                                        : n.type === 'info'
                                             ? 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/60 dark:border-blue-900/60 dark:text-blue-200'
                                             : 'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/60 dark:border-emerald-900/60 dark:text-emerald-200'
-                                    }`}
+                                        }`}
                                 >
                                     <div className="mt-0.5">
                                         {n.type === 'error' ? <IconX /> : n.type === 'info' ? <IconInfo /> : <IconCheck />}
@@ -1363,21 +1379,20 @@
                             ))}
                         </div>
 
-                        
+
 
                         {/* Middle Workspaces */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                            
+
                             {/* Input Column */}
                             <div className="lg:col-span-4 flex flex-col gap-6">
-                                
+
                                 {/* Raw Input Panel */}
-                                <div 
-                                    className={`bg-white dark:bg-[#0f172a] p-5 rounded-3xl border transition-all duration-300 shadow-premium dark:shadow-premium-dark flex flex-col ${
-                                        isDragging 
-                                            ? 'border-brand-500 ring-4 ring-brand-500/15' 
-                                            : 'border-slate-100 dark:border-slate-800/80'
-                                    }`}
+                                <div
+                                    className={`bg-white dark:bg-[#0f172a] p-5 rounded-3xl border transition-all duration-300 shadow-premium dark:shadow-premium-dark flex flex-col ${isDragging
+                                        ? 'border-brand-500 ring-4 ring-brand-500/15'
+                                        : 'border-slate-100 dark:border-slate-800/80'
+                                        }`}
                                     onDragOver={handleDragOver}
                                     onDragLeave={handleDragLeave}
                                     onDrop={handleDrop}
@@ -1387,7 +1402,7 @@
                                             <IconBookOpen />
                                             Input NIK Indonesia
                                         </label>
-                                        <button 
+                                        <button
                                             onClick={loadDemoData}
                                             className="text-xs text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 font-semibold flex items-center gap-1 transition-colors"
                                             title="Muat data contoh"
@@ -1401,7 +1416,7 @@
                                         <textarea
                                             id="nik-input"
                                             className="w-full h-72 p-4 bg-slate-50/50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-y font-mono text-sm placeholder-slate-400 dark:placeholder-slate-600 text-slate-800 dark:text-slate-200 transition-all duration-200 leading-relaxed"
-                                            placeholder="Contoh:&#10;3507121808580001&#10;3507116506690003&#10;&#10;Atau seret file .txt/.csv ke sini..."
+                                            placeholder="Contoh:&#10;3507121808580001&#10;3507116506690003&#10;&#10;"
                                             value={rawInput}
                                             onChange={(e) => setRawInput(e.target.value)}
                                         />
@@ -1421,7 +1436,7 @@
                                             onClick={handleProcess}
                                             className="flex-grow bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md shadow-brand-500/20 hover:shadow-brand-500/30 flex items-center justify-center gap-2 text-sm"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3" /></svg>
                                             Proses NIK
                                         </button>
                                         <button
@@ -1440,45 +1455,45 @@
                                         <IconInfo />
                                         <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-200">Keterangan & Struktur NIK</h3>
                                     </div>
-                                    
+
                                     {/* NIK segment hover explorer */}
                                     <div className="space-y-3">
                                         <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                                             Arahkan kursor Anda ke bagian angka NIK di bawah ini untuk melihat struktur kodenya secara detail:
                                         </p>
-                                        
+
                                         <div className="flex justify-center font-mono text-base font-extrabold tracking-wider bg-slate-100/50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 select-none overflow-x-auto">
-                                            <span 
+                                            <span
                                                 onMouseEnter={() => setHoveredSegment('prov')}
                                                 onMouseLeave={() => setHoveredSegment(null)}
                                                 className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'prov' ? 'bg-rose-200 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300' : 'text-slate-700 dark:text-slate-300'}`}
                                             >35</span>
-                                            <span 
+                                            <span
                                                 onMouseEnter={() => setHoveredSegment('kab')}
                                                 onMouseLeave={() => setHoveredSegment(null)}
                                                 className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'kab' ? 'bg-amber-200 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300' : 'text-slate-700 dark:text-slate-300'}`}
                                             >07</span>
-                                            <span 
+                                            <span
                                                 onMouseEnter={() => setHoveredSegment('kec')}
                                                 onMouseLeave={() => setHoveredSegment(null)}
                                                 className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'kec' ? 'bg-emerald-200 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300'}`}
                                             >12</span>
-                                            <span 
+                                            <span
                                                 onMouseEnter={() => setHoveredSegment('tgl')}
                                                 onMouseLeave={() => setHoveredSegment(null)}
                                                 className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'tgl' ? 'bg-blue-200 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300'}`}
                                             >18</span>
-                                            <span 
+                                            <span
                                                 onMouseEnter={() => setHoveredSegment('bln')}
                                                 onMouseLeave={() => setHoveredSegment(null)}
                                                 className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'bln' ? 'bg-violet-200 text-violet-800 dark:bg-violet-950/80 dark:text-violet-300' : 'text-slate-700 dark:text-slate-300'}`}
                                             >08</span>
-                                            <span 
+                                            <span
                                                 onMouseEnter={() => setHoveredSegment('thn')}
                                                 onMouseLeave={() => setHoveredSegment(null)}
                                                 className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'thn' ? 'bg-fuchsia-200 text-fuchsia-800 dark:bg-fuchsia-950/80 dark:text-fuchsia-300' : 'text-slate-700 dark:text-slate-300'}`}
                                             >58</span>
-                                            <span 
+                                            <span
                                                 onMouseEnter={() => setHoveredSegment('urut')}
                                                 onMouseLeave={() => setHoveredSegment(null)}
                                                 className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'urut' ? 'bg-slate-300 text-slate-800 dark:bg-slate-800 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'}`}
@@ -1517,33 +1532,31 @@
 
                             {/* Output & Analytics Column */}
                             <div className="lg:col-span-8 flex flex-col gap-6">
-                                
+
                                 {/* Right Side Card Container */}
                                 <div className="bg-white dark:bg-[#0f172a] rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark overflow-hidden flex flex-col min-h-[580px]">
-                                    
+
                                     {/* Tabs and Actions bar */}
                                     <div className="px-5 pt-4 pb-0 border-b border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50 dark:bg-slate-900/30">
                                         <div className="flex gap-2">
-                                            <button 
+                                            <button
                                                 onClick={() => setActiveTab('table')}
-                                                className={`pb-3 pt-1 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-                                                    activeTab === 'table' 
-                                                        ? 'border-brand-500 text-brand-600 dark:text-brand-400' 
-                                                        : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
-                                                }`}
+                                                className={`pb-3 pt-1 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === 'table'
+                                                    ? 'border-brand-500 text-brand-600 dark:text-brand-400'
+                                                    : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                                                    }`}
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-table-properties"><path d="M12 3v18"/><path d="M3 12h18"/><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-table-properties"><path d="M12 3v18" /><path d="M3 12h18" /><rect width="18" height="18" x="3" y="3" rx="2" /></svg>
                                                 Daftar Data NIK
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => setActiveTab('analytics')}
-                                                className={`pb-3 pt-1 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-                                                    activeTab === 'analytics' 
-                                                        ? 'border-brand-500 text-brand-600 dark:text-brand-400' 
-                                                        : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
-                                                }`}
+                                                className={`pb-3 pt-1 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === 'analytics'
+                                                    ? 'border-brand-500 text-brand-600 dark:text-brand-400'
+                                                    : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                                                    }`}
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg>
                                                 Analisis & Grafik
                                             </button>
                                         </div>
@@ -1580,7 +1593,7 @@
                                             // Empty state
                                             <div className="flex-grow flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 p-8 text-center space-y-4">
                                                 <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-full border border-slate-100 dark:border-slate-800/80 shadow-inner">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-database-backup text-slate-300 dark:text-slate-700"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/><path d="M12 9h.01"/><path d="M12 15h.01"/><path d="M10 12h4"/></svg>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-database-backup text-slate-300 dark:text-slate-700"><path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" /><path d="M3 21v-5h5" /><path d="M12 9h.01" /><path d="M12 15h.01" /><path d="M10 12h4" /></svg>
                                                 </div>
                                                 <div className="max-w-md">
                                                     <p className="font-bold text-slate-700 dark:text-slate-300 text-base">Belum ada NIK yang diproses</p>
@@ -1592,16 +1605,16 @@
                                         ) : activeTab === 'table' ? (
                                             // TABLE VIEW
                                             <div className="flex-grow flex flex-col gap-4">
-                                                
+
                                                 {/* Filter Options Header */}
                                                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/50">
-                                                    
+
                                                     {/* Search query */}
                                                     <div className="relative sm:col-span-1">
                                                         <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-600">
                                                             <IconSearch />
                                                         </span>
-                                                        <input 
+                                                        <input
                                                             type="text"
                                                             placeholder="Cari NIK/Wilayah..."
                                                             className="w-full pl-9 pr-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-700 dark:text-slate-200 transition-all"
@@ -1669,8 +1682,8 @@
                                                             {paginatedData.map((item, index) => {
                                                                 const globalIndex = (currentPage - 1) * itemsPerPage + index + 1;
                                                                 return (
-                                                                    <tr 
-                                                                        key={index} 
+                                                                    <tr
+                                                                        key={index}
                                                                         onClick={() => {
                                                                             if (item.isValid) {
                                                                                 setSelectedNikDetails(item);
@@ -1689,9 +1702,8 @@
                                                                                 triggerNotification(`NIK Gagal: ${item.errorReason}`, 'error');
                                                                             }
                                                                         }}
-                                                                        className={`hover:bg-brand-50/40 dark:hover:bg-brand-950/20 transition-all cursor-pointer ${
-                                                                            !item.isValid ? 'bg-rose-500/5 hover:bg-rose-500/10' : ''
-                                                                        }`}
+                                                                        className={`hover:bg-brand-50/40 dark:hover:bg-brand-950/20 transition-all cursor-pointer ${!item.isValid ? 'bg-rose-500/5 hover:bg-rose-500/10' : ''
+                                                                            }`}
                                                                     >
                                                                         <td className="px-5 py-3 whitespace-nowrap text-center font-bold text-slate-400 dark:text-slate-500">{globalIndex}</td>
                                                                         <td className={`px-5 py-3 whitespace-nowrap font-mono font-bold tracking-wide ${!item.isValid ? 'text-rose-500 line-through' : 'text-slate-800 dark:text-slate-200'}`}>{item.nik}</td>
@@ -1704,8 +1716,8 @@
                                                                         <td className="px-5 py-3 whitespace-nowrap text-center">
                                                                             {item.isValid ? (
                                                                                 <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider
-                                                                                    ${item.jenisKelamin === 'Laki-Laki' 
-                                                                                        ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/10' 
+                                                                                    ${item.jenisKelamin === 'Laki-Laki'
+                                                                                        ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/10'
                                                                                         : 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/10'
                                                                                     }`}
                                                                                 >
@@ -1723,7 +1735,7 @@
                                                                                     Valid
                                                                                 </span>
                                                                             ) : (
-                                                                                <span 
+                                                                                <span
                                                                                     className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/10 cursor-help"
                                                                                     title={item.errorReason}
                                                                                 >
@@ -1744,7 +1756,7 @@
                                                     <div>
                                                         Menampilkan {Math.min(filteredAndSortedData.length, (currentPage - 1) * itemsPerPage + 1)} - {Math.min(filteredAndSortedData.length, currentPage * itemsPerPage)} dari {filteredAndSortedData.length} data
                                                     </div>
-                                                    
+
                                                     {totalPages > 1 && (
                                                         <div className="flex items-center gap-1">
                                                             <button
@@ -1752,18 +1764,17 @@
                                                                 disabled={currentPage === 1}
                                                                 className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors"
                                                             >
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6" /></svg>
                                                             </button>
-                                                            
+
                                                             {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                                                                 <button
                                                                     key={page}
                                                                     onClick={() => setCurrentPage(page)}
-                                                                    className={`w-7 h-7 rounded-lg border text-center font-bold transition-all ${
-                                                                        currentPage === page 
-                                                                            ? 'bg-brand-500 border-brand-500 text-white shadow-sm shadow-brand-500/20' 
-                                                                            : 'border-slate-200 dark:border-slate-850 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850'
-                                                                    }`}
+                                                                    className={`w-7 h-7 rounded-lg border text-center font-bold transition-all ${currentPage === page
+                                                                        ? 'bg-brand-500 border-brand-500 text-white shadow-sm shadow-brand-500/20'
+                                                                        : 'border-slate-200 dark:border-slate-850 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850'
+                                                                        }`}
                                                                 >
                                                                     {page}
                                                                 </button>
@@ -1774,7 +1785,7 @@
                                                                 disabled={currentPage === totalPages}
                                                                 className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors"
                                                             >
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6" /></svg>
                                                             </button>
                                                         </div>
                                                     )}
@@ -1787,49 +1798,49 @@
                                         ) : (
                                             // ANALYTICS VIEW
                                             <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                
+
                                                 {/* Left Column: Gender & Age Charts */}
                                                 <div className="space-y-6">
                                                     {/* Gender Split (Visual progress ring) */}
                                                     <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 p-5 rounded-2xl space-y-4">
                                                         <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                                                             Distribusi Jenis Kelamin
                                                         </h3>
-                                                        
+
                                                         <div className="flex items-center justify-around">
                                                             {/* SVG Progress Ring */}
                                                             <div className="relative w-28 h-28">
                                                                 <svg className="w-full h-full transform -rotate-95" viewBox="0 0 36 36">
                                                                     {/* Background circle */}
                                                                     <circle className="text-slate-200 dark:text-slate-800" strokeWidth="3" stroke="currentColor" fill="none" cx="18" cy="18" r="15.915"></circle>
-                                                                    
+
                                                                     {/* Male segment (blue) */}
-                                                                    <circle 
-                                                                        className="text-blue-500" 
-                                                                        strokeWidth="3.2" 
-                                                                        strokeDasharray={`${metrics.valid > 0 ? (metrics.male / metrics.valid) * 100 : 0} ${100 - (metrics.valid > 0 ? (metrics.male / metrics.valid) * 100 : 0)}`} 
-                                                                        strokeDashoffset="0" 
-                                                                        strokeLinecap="round" 
-                                                                        stroke="currentColor" 
-                                                                        fill="none" 
-                                                                        cx="18" 
-                                                                        cy="18" 
+                                                                    <circle
+                                                                        className="text-blue-500"
+                                                                        strokeWidth="3.2"
+                                                                        strokeDasharray={`${metrics.valid > 0 ? (metrics.male / metrics.valid) * 100 : 0} ${100 - (metrics.valid > 0 ? (metrics.male / metrics.valid) * 100 : 0)}`}
+                                                                        strokeDashoffset="0"
+                                                                        strokeLinecap="round"
+                                                                        stroke="currentColor"
+                                                                        fill="none"
+                                                                        cx="18"
+                                                                        cy="18"
                                                                         r="15.915"
                                                                     ></circle>
-                                                                    
+
                                                                     {/* Female segment (pink) - layered using offset */}
                                                                     {metrics.female > 0 && (
-                                                                        <circle 
-                                                                            className="text-pink-500" 
-                                                                            strokeWidth="3.2" 
-                                                                            strokeDasharray={`${(metrics.female / metrics.valid) * 100} ${100 - (metrics.female / metrics.valid) * 100}`} 
-                                                                            strokeDashoffset={`${100 - (metrics.male / metrics.valid) * 100}`} 
-                                                                            strokeLinecap="round" 
-                                                                            stroke="currentColor" 
-                                                                            fill="none" 
-                                                                            cx="18" 
-                                                                            cy="18" 
+                                                                        <circle
+                                                                            className="text-pink-500"
+                                                                            strokeWidth="3.2"
+                                                                            strokeDasharray={`${(metrics.female / metrics.valid) * 100} ${100 - (metrics.female / metrics.valid) * 100}`}
+                                                                            strokeDashoffset={`${100 - (metrics.male / metrics.valid) * 100}`}
+                                                                            strokeLinecap="round"
+                                                                            stroke="currentColor"
+                                                                            fill="none"
+                                                                            cx="18"
+                                                                            cy="18"
                                                                             r="15.915"
                                                                         ></circle>
                                                                     )}
@@ -1859,7 +1870,7 @@
                                                     {/* Age Groups Chart */}
                                                     <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 p-5 rounded-2xl space-y-4">
                                                         <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bar-chart-2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bar-chart-2"><line x1="18" x2="18" y1="20" y2="10" /><line x1="12" x2="12" y1="20" y2="4" /><line x1="6" x2="6" y1="20" y2="14" /></svg>
                                                             Distribusi Kelompok Umur
                                                         </h3>
 
@@ -1874,8 +1885,8 @@
                                                                                 <span className="text-slate-800 dark:text-slate-200">{count} data ({Math.round(pct)}%)</span>
                                                                             </div>
                                                                             <div className="w-full bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                                                                                <div 
-                                                                                    style={{ width: `${pct}%` }} 
+                                                                                <div
+                                                                                    style={{ width: `${pct}%` }}
                                                                                     className="bg-brand-500 h-full rounded-full transition-all duration-500"
                                                                                 ></div>
                                                                             </div>
@@ -1906,8 +1917,8 @@
                                                                                 <span className="text-slate-500 dark:text-slate-400">{prov.count} data ({Math.round(pct)}%)</span>
                                                                             </div>
                                                                             <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                                                                                <div 
-                                                                                    style={{ width: `${pct}%` }} 
+                                                                                <div
+                                                                                    style={{ width: `${pct}%` }}
                                                                                     className="bg-indigo-500 h-full rounded-full transition-all duration-500"
                                                                                 ></div>
                                                                             </div>
@@ -1937,9 +1948,9 @@
                     {/* KTP Mockup Preview Modal */}
                     {selectedNikDetails && (
                         <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300">
-                            
+
                             <div className="bg-white dark:bg-[#0f172a] rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 max-w-4xl w-full overflow-hidden flex flex-col md:flex-row transition-all duration-300 animate-scale-up">
-                                
+
                                 {/* Left Side: Interactive Editor */}
                                 <div className="p-6 md:w-1/2 border-r border-slate-100 dark:border-slate-850 flex flex-col gap-4 bg-slate-50/40 dark:bg-slate-900/20">
                                     <div>
@@ -1950,8 +1961,8 @@
                                     <div className="grid grid-cols-2 gap-3 text-xs">
                                         <div className="col-span-2 space-y-1">
                                             <label className="font-bold text-slate-500 dark:text-slate-400">Nama Lengkap</label>
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
                                                 value={ktpName}
                                                 onChange={(e) => setKtpName(e.target.value.toUpperCase())}
@@ -1960,8 +1971,8 @@
 
                                         <div className="col-span-2 space-y-1">
                                             <label className="font-bold text-slate-500 dark:text-slate-400">Alamat</label>
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
                                                 value={ktpAddress}
                                                 onChange={(e) => setKtpAddress(e.target.value.toUpperCase())}
@@ -1970,8 +1981,8 @@
 
                                         <div className="space-y-1">
                                             <label className="font-bold text-slate-500 dark:text-slate-400">RT / RW</label>
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
                                                 value={ktpRtrw}
                                                 onChange={(e) => setKtpRtrw(e.target.value.toUpperCase())}
@@ -1980,8 +1991,8 @@
 
                                         <div className="space-y-1">
                                             <label className="font-bold text-slate-500 dark:text-slate-400">Kel / Desa</label>
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
                                                 value={ktpKelDesa}
                                                 onChange={(e) => setKtpKelDesa(e.target.value.toUpperCase())}
@@ -1990,8 +2001,8 @@
 
                                         <div className="space-y-1">
                                             <label className="font-bold text-slate-500 dark:text-slate-400">Kecamatan</label>
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
                                                 value={ktpKecamatan}
                                                 onChange={(e) => setKtpKecamatan(e.target.value.toUpperCase())}
@@ -2000,8 +2011,8 @@
 
                                         <div className="space-y-1">
                                             <label className="font-bold text-slate-500 dark:text-slate-400">Tempat Lahir</label>
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
                                                 value={ktpTempatLahir}
                                                 onChange={(e) => setKtpTempatLahir(e.target.value.toUpperCase())}
@@ -2010,7 +2021,7 @@
 
                                         <div className="space-y-1">
                                             <label className="font-bold text-slate-500 dark:text-slate-400">Gol. Darah</label>
-                                            <select 
+                                            <select
                                                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
                                                 value={ktpDarah}
                                                 onChange={(e) => setKtpDarah(e.target.value)}
@@ -2025,7 +2036,7 @@
 
                                         <div className="space-y-1">
                                             <label className="font-bold text-slate-500 dark:text-slate-400">Agama</label>
-                                            <select 
+                                            <select
                                                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
                                                 value={ktpAgama}
                                                 onChange={(e) => setKtpAgama(e.target.value)}
@@ -2041,7 +2052,7 @@
 
                                         <div className="space-y-1">
                                             <label className="font-bold text-slate-500 dark:text-slate-400">Status Perkawinan</label>
-                                            <select 
+                                            <select
                                                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
                                                 value={ktpStatus}
                                                 onChange={(e) => setKtpStatus(e.target.value)}
@@ -2055,8 +2066,8 @@
 
                                         <div className="col-span-2 space-y-1">
                                             <label className="font-bold text-slate-500 dark:text-slate-400">Pekerjaan</label>
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
                                                 value={ktpPekerjaan}
                                                 onChange={(e) => setKtpPekerjaan(e.target.value.toUpperCase())}
@@ -2069,7 +2080,7 @@
                                 <div className="p-6 md:w-1/2 flex flex-col justify-between gap-6 bg-slate-100 dark:bg-slate-950/60">
                                     <div className="flex items-center justify-between">
                                         <h4 className="text-sm font-extrabold text-slate-700 dark:text-slate-300">Simulasi Kartu KTP</h4>
-                                        <button 
+                                        <button
                                             onClick={() => setSelectedNikDetails(null)}
                                             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-350 transition-colors"
                                         >
@@ -2079,10 +2090,10 @@
 
                                     {/* KTP CARD VISUAL */}
                                     <div className="w-full aspect-[1.586/1] bg-gradient-to-br from-cyan-400 to-sky-500 text-[#0f172a] rounded-2xl shadow-xl p-4 flex flex-col justify-between border-2 border-cyan-300 relative overflow-hidden select-none font-mono text-[9px] font-bold">
-                                        
+
                                         {/* Abstract background watermark lines */}
                                         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-300 via-emerald-600 to-indigo-900 pointer-events-none"></div>
-                                        
+
                                         {/* KTP Title Header */}
                                         <div className="text-center space-y-0.5 z-10 border-b-2 border-slate-900/20 pb-1">
                                             <div className="text-[10px] tracking-widest font-extrabold uppercase">PROVINSI {selectedNikDetails.provinsi}</div>
@@ -2183,7 +2194,7 @@
                                                     <span className="text-[6px] text-slate-800/40 uppercase mb-0.5">TANDA TANGAN</span>
                                                     <div className="w-14 h-6 border-b border-dashed border-slate-900/30 flex items-center justify-center opacity-55">
                                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" className="w-full h-full text-slate-800">
-                                                            <path d="M10 20 Q 20 5, 40 25 T 70 15 T 90 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                                            <path d="M10 20 Q 20 5, 40 25 T 70 15 T 90 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                                                         </svg>
                                                     </div>
                                                 </div>
@@ -2210,7 +2221,7 @@
                                                 <p className="text-[9px] text-slate-400 dark:text-slate-500 font-medium italic mt-0.5 truncate max-w-[110px]">{selectedNikDetails.shio.nature}</p>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="col-span-2 bg-brand-500/5 dark:bg-brand-500/10 p-3 rounded-xl border border-brand-500/10 flex items-center gap-3">
                                             <div className="text-xl">🎂</div>
                                             <div>
@@ -2233,4 +2244,5 @@
         root.render(<App />);
     </script>
 </body>
+
 </html>
