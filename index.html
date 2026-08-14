@@ -1,347 +1,1733 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Ekstraktor NIK</title>
+    <title>Dashboard Ekstraktor NIK Premium | Real-time Parser & Analytics</title>
     
-    <!-- Load Tailwind CSS -->
+    <!-- Meta SEO -->
+    <meta name="description" content="Ekstrak data secara instan dari Nomor Induk Kependudukan (NIK) Indonesia. Dapatkan Tanggal Lahir, Jenis Kelamin, Provinsi, Umur Detail, Zodiac, dan Shio. 100% Aman & Berjalan di Browser Anda.">
+    <meta name="author" content="ADEX IDN">
+    <meta name="keywords" content="ekstraktor nik, parser nik, cek nik, ktp parser, data kependudukan, indonesia">
+    
+    <!-- Google Fonts - Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS with custom branding config -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6', // Violet primary
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            950: '#2e1065',
+                        },
+                    },
+                    boxShadow: {
+                        'premium': '0 10px 30px -10px rgba(124, 58, 237, 0.12), 0 1px 1px rgba(0, 0, 0, 0.05)',
+                        'premium-dark': '0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 1px 1px rgba(255, 255, 255, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
     
-    <!-- Load React and ReactDOM -->
+    <!-- React, ReactDOM & Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Load Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Load Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Vercel Web Analytics -->
-    <script>
-        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
-
+    <!-- Custom styling for smooth transitions -->
     <style>
-        /* Custom scrollbar for better appearance */
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .dark .glass-panel {
+            background-color: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        /* Custom scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
+            background: transparent;
         }
         ::-webkit-scrollbar-thumb {
             background: #cbd5e1;
-            border-radius: 4px;
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+            background: #a78bfa;
+        }
+        
+        /* Shimmer effect */
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+        .shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+        .shimmer::after {
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            transform: translateX(-100%);
+            background-image: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.2) 20%,
+                rgba(255, 255, 255, 0.5) 60%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: shimmer 2s infinite;
+            content: '';
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Container for React App -->
+<body class="bg-[#f8fafc] dark:bg-[#090d16] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col antialiased">
+    
     <div id="root"></div>
 
     <script type="text/babel">
-        // Since we are not using a bundler, we extract hooks directly from the global React object
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
 
-        // Inline SVG Icons as replacements for Lucide React components
-        const IconInfo = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info w-8 h-8"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        // Provinces of Indonesia dictionary
+        const PROVINCE_MAP = {
+            '11': 'Aceh',
+            '12': 'Sumatera Utara',
+            '13': 'Sumatera Barat',
+            '14': 'Riau',
+            '15': 'Jambi',
+            '16': 'Sumatera Selatan',
+            '17': 'Bengkulu',
+            '18': 'Lampung',
+            '19': 'Kepulauan Bangka Belitung',
+            '21': 'Kepulauan Riau',
+            '31': 'DKI Jakarta',
+            '32': 'Jawa Barat',
+            '33': 'Jawa Tengah',
+            '34': 'DI Yogyakarta',
+            '35': 'Jawa Timur',
+            '36': 'Banten',
+            '51': 'Bali',
+            '52': 'Nusa Tenggara Barat',
+            '53': 'Nusa Tenggara Timur',
+            '61': 'Kalimantan Barat',
+            '62': 'Kalimantan Tengah',
+            '63': 'Kalimantan Selatan',
+            '64': 'Kalimantan Timur',
+            '65': 'Kalimantan Utara',
+            '71': 'Sulawesi Utara',
+            '72': 'Sulawesi Tengah',
+            '73': 'Sulawesi Selatan',
+            '74': 'Sulawesi Tenggara',
+            '75': 'Gorontalo',
+            '76': 'Sulawesi Barat',
+            '81': 'Maluku',
+            '82': 'Maluku Utara',
+            '91': 'Papua Barat',
+            '92': 'Papua Barat Daya',
+            '93': 'Papua Selatan',
+            '94': 'Papua',
+            '95': 'Papua Pegunungan',
+            '96': 'Papua Tengah'
+        };
+
+        const INDONESIAN_DAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const INDONESIAN_MONTHS = [
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+
+        // SVGs helper components
+        const IconSun = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
         );
-        const IconInfoSmall = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info w-4 h-4"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        const IconMoon = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        );
+        const IconCheck = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check text-emerald-500"><polyline points="20 6 9 17 4 12"/></svg>
+        );
+        const IconX = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x text-rose-500"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        );
+        const IconSparkles = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-brand-500 dark:text-brand-400"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/><path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z"/><path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z"/></svg>
+        );
+        const IconShieldAlert = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shield-alert text-amber-500"><path d="M20 13c0 5-3.5 7.5-7.66 9.7a1 1 0 0 1-.68 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 .76-.97l8-2a1 1 0 0 1 .48 0l8 2A1 1 0 0 1 20 6v7z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
         );
         const IconUpload = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-upload w-4 h-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-upload"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
         );
         const IconTrash2 = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2 w-4 h-4"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
         );
         const IconCopy = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy w-4 h-4"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
         );
-        const IconDownloadBig = () => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download w-12 h-12 text-gray-300"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+        const IconDownload = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
         );
+        const IconSearch = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        );
+        const IconUsers = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users text-indigo-500"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        );
+        const IconBriefcase = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-briefcase text-slate-400"><path d="M15 2H9a2 2 0 0 0-2 2v2H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-4V4a2 2 0 0 0-2-2z"/><path d="M7 6h10"/></svg>
+        );
+        const IconMapPin = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-pin text-rose-500"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        );
+        const IconInfo = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info text-blue-500"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        );
+        const IconTrendingUp = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up text-emerald-500"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        );
+        const IconBookOpen = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-book-open text-brand-500"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        );
+
+        // Helper calculations
+        const getZodiac = (day, month) => {
+            if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return { name: 'Aries', emoji: '♈', desc: 'Mandiri & Berani' };
+            if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return { name: 'Taurus', emoji: '♉', desc: 'Setia & Praktis' };
+            if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return { name: 'Gemini', emoji: '♊', desc: 'Cerdas & Fleksibel' };
+            if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return { name: 'Cancer', emoji: '♋', desc: 'Peka & Protektif' };
+            if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return { name: 'Leo', emoji: '♌', desc: 'Kreatif & Percaya Diri' };
+            if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return { name: 'Virgo', emoji: '♍', desc: 'Analitis & Rapi' };
+            if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return { name: 'Libra', emoji: '♎', desc: 'Adil & Kooperatif' };
+            if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return { name: 'Scorpio', emoji: '♏', desc: 'Fokus & Bertekad' };
+            if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return { name: 'Sagittarius', emoji: '♐', desc: 'Optimis & Bebas' };
+            if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return { name: 'Capricorn', emoji: '♑', desc: 'Disiplin & Ambisius' };
+            if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return { name: 'Aquarius', emoji: '♒', desc: 'Original & Humanis' };
+            return { name: 'Pisces', emoji: '♓', desc: 'Intuitif & Artistik' };
+        };
+
+        const getShio = (year) => {
+            const shios = [
+                { name: 'Tikus', emoji: '🐀', element: 'Air', nature: 'Cerdas, menawan, hemat' },
+                { name: 'Kerbau', emoji: '🐂', element: 'Tanah', nature: 'Kuat, tekun, dapat diandalkan' },
+                { name: 'Macan', emoji: '🐅', element: 'Kayu', nature: 'Berani, kompetitif, impulsif' },
+                { name: 'Kelinci', emoji: '🐇', element: 'Kayu', nature: 'Lembut, tenang, waspada' },
+                { name: 'Naga', emoji: '🐉', element: 'Tanah', nature: 'Kuat, berenergi, pemimpin' },
+                { name: 'Ular', emoji: '🐍', element: 'Api', nature: 'Bijaksana, misterius, intuitif' },
+                { name: 'Kuda', emoji: '🐎', element: 'Api', nature: 'Aktif, energik, independen' },
+                { name: 'Kambing', emoji: '🐑', element: 'Tanah', nature: 'Lembut, simpatik, artistik' },
+                { name: 'Monyet', emoji: '🐒', element: 'Logam', nature: 'Cerdas, jenaka, penuh rasa ingin tahu' },
+                { name: 'Ayam', emoji: '🐓', element: 'Logam', nature: 'Rajin, berani, berbakat' },
+                { name: 'Anjing', emoji: '🐕', element: 'Tanah', nature: 'Setia, jujur, waspada' },
+                { name: 'Babi', emoji: '🐖', element: 'Air', nature: 'Penyayang, jujur, rajin' }
+            ];
+            let index = (year - 4) % 12;
+            if (index < 0) index += 12;
+            return shios[index];
+        };
+
+        const parseNik = (nik) => {
+            const cleanNik = nik.trim().replace(/\D/g, '');
+
+            if (cleanNik.length !== 16) {
+                return {
+                    nik: nik.trim() || '-',
+                    isValid: false,
+                    errorReason: cleanNik.length === 0 ? 'Data kosong' : `Panjang NIK salah (${cleanNik.length} digit, harus 16)`,
+                    provinsi: '-',
+                    provinsiCode: '-',
+                    tanggalLahirStr: '-',
+                    tanggalLahirObj: null,
+                    jenisKelamin: '-',
+                    umurDetail: { years: 0, months: 0, days: 0 },
+                    zodiac: null,
+                    shio: null,
+                    dayOfWeek: '-'
+                };
+            }
+
+            const provCode = cleanNik.substring(0, 2);
+            const provName = PROVINCE_MAP[provCode];
+            
+            if (!provName) {
+                return {
+                    nik: cleanNik,
+                    isValid: false,
+                    errorReason: `Kode Provinsi (${provCode}) tidak dikenali`,
+                    provinsi: '-',
+                    provinsiCode: provCode,
+                    tanggalLahirStr: '-',
+                    tanggalLahirObj: null,
+                    jenisKelamin: '-',
+                    umurDetail: { years: 0, months: 0, days: 0 },
+                    zodiac: null,
+                    shio: null,
+                    dayOfWeek: '-'
+                };
+            }
+
+            try {
+                const ddStr = cleanNik.substring(6, 8);
+                const mmStr = cleanNik.substring(8, 10);
+                const yyStr = cleanNik.substring(10, 12);
+
+                let dd = parseInt(ddStr, 10);
+                const mm = parseInt(mmStr, 10);
+                let yy = parseInt(yyStr, 10);
+
+                let jenisKelamin = 'Laki-Laki';
+                if (dd > 40) {
+                    jenisKelamin = 'Perempuan';
+                    dd -= 40;
+                }
+
+                let fullYear = 1900 + yy;
+                if (yy <= 30) {
+                    fullYear = 2000 + yy;
+                }
+
+                // Check month bounds
+                if (mm < 1 || mm > 12) {
+                    return {
+                        nik: cleanNik,
+                        isValid: false,
+                        errorReason: `Bulan lahir tidak valid (${mmStr})`,
+                        provinsi: provName,
+                        provinsiCode: provCode,
+                        tanggalLahirStr: '-',
+                        tanggalLahirObj: null,
+                        jenisKelamin: jenisKelamin,
+                        umurDetail: { years: 0, months: 0, days: 0 },
+                        zodiac: null,
+                        shio: null,
+                        dayOfWeek: '-'
+                    };
+                }
+
+                // Check day bounds based on actual calendar
+                const daysInMonth = new Date(fullYear, mm, 0).getDate();
+                if (dd < 1 || dd > 31) {
+                    return {
+                        nik: cleanNik,
+                        isValid: false,
+                        errorReason: `Tanggal lahir tidak valid (${ddStr})`,
+                        provinsi: provName,
+                        provinsiCode: provCode,
+                        tanggalLahirStr: '-',
+                        tanggalLahirObj: null,
+                        jenisKelamin: jenisKelamin,
+                        umurDetail: { years: 0, months: 0, days: 0 },
+                        zodiac: null,
+                        shio: null,
+                        dayOfWeek: '-'
+                    };
+                }
+
+                if (dd > daysInMonth) {
+                    return {
+                        nik: cleanNik,
+                        isValid: false,
+                        errorReason: `Bulan ${INDONESIAN_MONTHS[mm-1]} ${fullYear} hanya memiliki ${daysInMonth} hari (ditemukan ${dd})`,
+                        provinsi: provName,
+                        provinsiCode: provCode,
+                        tanggalLahirStr: '-',
+                        tanggalLahirObj: null,
+                        jenisKelamin: jenisKelamin,
+                        umurDetail: { years: 0, months: 0, days: 0 },
+                        zodiac: null,
+                        shio: null,
+                        dayOfWeek: '-'
+                    };
+                }
+
+                const birthDate = new Date(fullYear, mm - 1, dd);
+                const dayOfWeek = INDONESIAN_DAYS[birthDate.getDay()];
+                const padDD = dd.toString().padStart(2, '0');
+                const birthDateStr = `${padDD} ${INDONESIAN_MONTHS[mm - 1]} ${fullYear}`;
+
+                // Calculate exact age
+                const today = new Date();
+                let ageYears = today.getFullYear() - birthDate.getFullYear();
+                let ageMonths = today.getMonth() - birthDate.getMonth();
+                let ageDays = today.getDate() - birthDate.getDate();
+
+                if (ageDays < 0) {
+                    ageMonths -= 1;
+                    const prevMonthDays = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+                    ageDays += prevMonthDays;
+                }
+                if (ageMonths < 0) {
+                    ageYears -= 1;
+                    ageMonths += 12;
+                }
+
+                // Zodiac & Shio
+                const zodiac = getZodiac(dd, mm);
+                const shio = getShio(fullYear);
+
+                return {
+                    nik: cleanNik,
+                    isValid: true,
+                    provinsi: provName,
+                    provinsiCode: provCode,
+                    tanggalLahirStr: birthDateStr,
+                    tanggalLahirObj: birthDate,
+                    jenisKelamin,
+                    umurDetail: { years: ageYears, months: ageMonths, days: ageDays },
+                    zodiac,
+                    shio,
+                    dayOfWeek
+                };
+            } catch (err) {
+                return {
+                    nik: cleanNik,
+                    isValid: false,
+                    errorReason: 'Kesalahan memproses algoritma NIK',
+                    provinsi: provName || '-',
+                    provinsiCode: provCode || '-',
+                    tanggalLahirStr: '-',
+                    tanggalLahirObj: null,
+                    jenisKelamin: '-',
+                    umurDetail: { years: 0, months: 0, days: 0 },
+                    zodiac: null,
+                    shio: null,
+                    dayOfWeek: '-'
+                };
+            }
+        };
 
         const App = () => {
             const [rawInput, setRawInput] = useState('');
             const [processedData, setProcessedData] = useState([]);
-            const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+            const [notifications, setNotifications] = useState([]);
+            const [darkMode, setDarkMode] = useState(false);
+            const [activeTab, setActiveTab] = useState('table'); // 'table' | 'analytics'
+            const [isDragging, setIsDragging] = useState(false);
+            const [selectedNikDetails, setSelectedNikDetails] = useState(null);
+            
+            // Filters & Search & Sort states
+            const [searchQuery, setSearchQuery] = useState('');
+            const [filterGender, setFilterGender] = useState('all');
+            const [filterValidity, setFilterValidity] = useState('all');
+            const [filterProvince, setFilterProvince] = useState('all');
+            const [sortBy, setSortBy] = useState('no'); // 'no' | 'nik' | 'age' | 'prov'
+            const [sortOrder, setSortOrder] = useState('asc'); // 'asc' | 'desc'
+            const [currentPage, setCurrentPage] = useState(1);
+            const itemsPerPage = 10;
 
+            // KTP custom fields state
+            const [ktpName, setKtpName] = useState('BUDI SANTOSO');
+            const [ktpAddress, setKtpAddress] = useState('JL. MAWAR INDAH NO. 45');
+            const [ktpRtrw, setKtpRtrw] = useState('004/012');
+            const [ktpKelDesa, setKtpKelDesa] = useState('PONDOK PINANG');
+            const [ktpKecamatan, setKtpKecamatan] = useState('KEBAYORAN LAMA');
+            const [ktpAgama, setKtpAgama] = useState('ISLAM');
+            const [ktpStatus, setKtpStatus] = useState('BELUM KAWIN');
+            const [ktpPekerjaan, setKtpPekerjaan] = useState('KARYAWAN SWASTA');
+            const [ktpDarah, setKtpDarah] = useState('O');
+
+            // Manage theme
             useEffect(() => {
-                if (notification.show) {
-                    const timer = setTimeout(() => {
-                        setNotification({ ...notification, show: false });
-                    }, 3000);
-                    return () => clearTimeout(timer);
+                const storedTheme = localStorage.getItem('theme');
+                if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    setDarkMode(true);
+                    document.documentElement.classList.add('dark');
+                } else {
+                    setDarkMode(false);
+                    document.documentElement.classList.remove('dark');
                 }
-            }, [notification]);
+            }, []);
 
-            const showNotification = (message, type = 'success') => {
-                setNotification({ show: true, message, type });
-            };
-
-            const processNik = (nik) => {
-                const cleanNik = nik.trim().replace(/\D/g, '');
-
-                if (cleanNik.length !== 16) {
-                    return {
-                        nik: nik.trim() || '-',
-                        tanggalLahir: 'Invalid NIK (16 digit)',
-                        jenisKelamin: '-',
-                        isValid: false,
-                    };
-                }
-
-                try {
-                    const ddStr = cleanNik.substring(6, 8);
-                    const mmStr = cleanNik.substring(8, 10);
-                    const yyStr = cleanNik.substring(10, 12);
-
-                    let dd = parseInt(ddStr, 10);
-                    const mm = parseInt(mmStr, 10);
-                    let yy = parseInt(yyStr, 10);
-
-                    let jenisKelamin = 'L';
-                    if (dd > 40) {
-                        jenisKelamin = 'P';
-                        dd -= 40;
-                    }
-
-                    let fullYear = 1900 + yy;
-                    if (yy <= 30) {
-                        fullYear = 2000 + yy;
-                    }
-
-                    let tanggalLahirStr = '-';
-                    if (dd > 0 && dd <= 31 && mm > 0 && mm <= 12) {
-                        const padDD = dd.toString().padStart(2, '0');
-                        const padMM = mm.toString().padStart(2, '0');
-                        tanggalLahirStr = `${padDD}/${padMM}/${fullYear}`;
-                    } else {
-                        tanggalLahirStr = 'Tgl Tidak Valid';
-                    }
-
-                    return {
-                        nik: cleanNik,
-                        tanggalLahir: tanggalLahirStr,
-                        jenisKelamin: jenisKelamin,
-                        isValid: tanggalLahirStr !== 'Tgl Tidak Valid',
-                    };
-                } catch (error) {
-                    return {
-                        nik: cleanNik,
-                        tanggalLahir: 'Error parsing',
-                        jenisKelamin: '-',
-                        isValid: false,
-                    };
+            const toggleDarkMode = () => {
+                if (darkMode) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    setDarkMode(false);
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    setDarkMode(true);
                 }
             };
 
-            const handleInputChange = (e) => {
-                setRawInput(e.target.value);
+            const triggerNotification = (message, type = 'success') => {
+                const newNotification = { id: Date.now(), message, type };
+                setNotifications(prev => [...prev, newNotification]);
+                setTimeout(() => {
+                    setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
+                }, 4000);
             };
 
             const handleProcess = () => {
                 if (!rawInput.trim()) {
-                    showNotification('Silakan masukkan NIK terlebih dahulu.', 'error');
+                    triggerNotification('Masukkan NIK terlebih dahulu.', 'error');
                     return;
                 }
-                const rawList = rawInput.split(/[\n,]/).filter(item => item.trim() !== '');
-                const processed = rawList.map(processNik);
-                setProcessedData(processed);
-                
-                if (processed.length > 0) {
-                    showNotification(`Berhasil memproses ${processed.length} NIK.`);
+                const lines = rawInput.split(/[\n,\s]+/).filter(line => line.trim() !== '');
+                const results = lines.map(line => parseNik(line));
+                setProcessedData(results);
+                setCurrentPage(1);
+
+                const validCount = results.filter(r => r.isValid).length;
+                if (results.length > 0) {
+                    triggerNotification(`Berhasil memproses ${results.length} NIK (${validCount} Valid, ${results.length - validCount} Gagal).`, 'success');
                 }
             };
 
             const handleClear = () => {
                 setRawInput('');
                 setProcessedData([]);
-                showNotification('Data dibersihkan.');
+                setSelectedNikDetails(null);
+                setCurrentPage(1);
+                triggerNotification('Seluruh data berhasil dibersihkan.', 'info');
             };
 
-            const handleCopyToClipboard = () => {
+            const loadDemoData = () => {
+                const demoList = [
+                    '3172010101900003', // DKI Jakarta, L, 1 Jan 1990
+                    '3273024505850002', // Jawa Barat, P, 5 Mei 1985
+                    '3578032010990001', // Jawa Timur, L, 20 Okt 1999
+                    '1201021212050004', // Sumatera Utara, L, 12 Des 2005
+                    '5102035508780006', // Bali, P, 15 Ags 1978
+                    '3301012304920005', // Jawa Tengah, L, 23 Apr 1992
+                    '3404024808010007', // DI Yogyakarta, P, 8 Ags 2001
+                    '35010101',         // Gagal: pendek
+                    '9999990101900001', // Gagal: provinsi salah
+                    '3172013211900001'  // Gagal: tanggal 32
+                ].join('\n');
+                
+                setRawInput(demoList);
+                const results = demoList.split('\n').map(line => parseNik(line));
+                setProcessedData(results);
+                setCurrentPage(1);
+                triggerNotification('Data demo berhasil dimuat.', 'info');
+            };
+
+            const handleDragOver = (e) => {
+                e.preventDefault();
+                setIsDragging(true);
+            };
+
+            const handleDragLeave = () => {
+                setIsDragging(false);
+            };
+
+            const handleDrop = (e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type === "text/plain" || file.name.endsWith('.txt') || file.name.endsWith('.csv')) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            setRawInput(event.target.result);
+                            triggerNotification(`Membaca berkas: ${file.name}`);
+                        };
+                        reader.readAsText(file);
+                    } else {
+                        triggerNotification('Format berkas tidak didukung. Unggah .txt atau .csv', 'error');
+                    }
+                }
+            };
+
+            // Summary metrics
+            const metrics = useMemo(() => {
+                const total = processedData.length;
+                const valid = processedData.filter(d => d.isValid).length;
+                const invalid = total - valid;
+                const male = processedData.filter(d => d.isValid && d.jenisKelamin === 'Laki-Laki').length;
+                const female = processedData.filter(d => d.isValid && d.jenisKelamin === 'Perempuan').length;
+                
+                const validAges = processedData.filter(d => d.isValid).map(d => d.umurDetail.years);
+                const avgAge = validAges.length > 0 ? Math.round(validAges.reduce((a, b) => a + b, 0) / validAges.length) : 0;
+
+                return { total, valid, invalid, male, female, avgAge };
+            }, [processedData]);
+
+            // Unique provinces listed in current data
+            const uniqueProvinces = useMemo(() => {
+                const provs = {};
+                processedData.forEach(d => {
+                    if (d.isValid && d.provinsi !== '-') {
+                        provs[d.provinsiCode] = d.provinsi;
+                    }
+                });
+                return Object.entries(provs).map(([code, name]) => ({ code, name }));
+            }, [processedData]);
+
+            // Filtered and Sorted Data
+            const filteredAndSortedData = useMemo(() => {
+                let data = [...processedData];
+
+                // Search query
+                if (searchQuery.trim() !== '') {
+                    const query = searchQuery.toLowerCase().trim();
+                    data = data.filter(d => 
+                        d.nik.toLowerCase().includes(query) || 
+                        d.provinsi.toLowerCase().includes(query) ||
+                        d.tanggalLahirStr.toLowerCase().includes(query) ||
+                        d.jenisKelamin.toLowerCase().includes(query)
+                    );
+                }
+
+                // Filter Gender
+                if (filterGender !== 'all') {
+                    data = data.filter(d => d.isValid && (filterGender === 'L' ? d.jenisKelamin === 'Laki-Laki' : d.jenisKelamin === 'Perempuan'));
+                }
+
+                // Filter Validity
+                if (filterValidity !== 'all') {
+                    data = data.filter(d => filterValidity === 'valid' ? d.isValid : !d.isValid);
+                }
+
+                // Filter Province
+                if (filterProvince !== 'all') {
+                    data = data.filter(d => d.isValid && d.provinsiCode === filterProvince);
+                }
+
+                // Sorting
+                data.sort((a, b) => {
+                    let valA, valB;
+                    switch (sortBy) {
+                        case 'nik':
+                            valA = a.nik;
+                            valB = b.nik;
+                            break;
+                        case 'age':
+                            valA = a.isValid ? a.umurDetail.years : -1;
+                            valB = b.isValid ? b.umurDetail.years : -1;
+                            break;
+                        case 'prov':
+                            valA = a.provinsi;
+                            valB = b.provinsi;
+                            break;
+                        default:
+                            return 0; // retain initial array index order
+                    }
+
+                    if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+                    if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+                    return 0;
+                });
+
+                return data;
+            }, [processedData, searchQuery, filterGender, filterValidity, filterProvince, sortBy, sortOrder]);
+
+            // Pagination calculations
+            const paginatedData = useMemo(() => {
+                const startIdx = (currentPage - 1) * itemsPerPage;
+                return filteredAndSortedData.slice(startIdx, startIdx + itemsPerPage);
+            }, [filteredAndSortedData, currentPage]);
+
+            const totalPages = Math.ceil(filteredAndSortedData.length / itemsPerPage);
+
+            // Copy to Clipboard (Excel format)
+            const copyToClipboard = () => {
                 if (processedData.length === 0) {
-                    showNotification('Tidak ada data untuk disalin.', 'error');
+                    triggerNotification('Tidak ada data untuk disalin.', 'error');
                     return;
                 }
-
-                const header = "NIK\tTanggal Lahir\tL/P\n";
-                const rows = processedData.map(row => `${row.nik}\t${row.tanggalLahir}\t${row.jenisKelamin}`).join('\n');
+                const header = "No\tNIK\tProvinsi\tTanggal Lahir\tHari Lahir\tJenis Kelamin\tUmur\tZodiac\tShio\tStatus\n";
+                const rows = processedData.map((d, index) => {
+                    const status = d.isValid ? 'Valid' : `Gagal (${d.errorReason})`;
+                    const ageStr = d.isValid ? `${d.umurDetail.years} Tahun ${d.umurDetail.months} Bulan` : '-';
+                    const zodiacStr = d.isValid ? `${d.zodiac.emoji} ${d.zodiac.name}` : '-';
+                    const shioStr = d.isValid ? `${d.shio.emoji} ${d.shio.name}` : '-';
+                    return `${index + 1}\t${d.nik}\t${d.provinsi}\t${d.tanggalLahirStr}\t${d.dayOfWeek}\t${d.jenisKelamin}\t${ageStr}\t${zodiacStr}\t${shioStr}\t${status}`;
+                }).join('\n');
+                
                 const fullText = header + rows;
-
-                try {
-                    const el = document.createElement('textarea');
-                    el.value = fullText;
-                    el.setAttribute('readonly', '');
-                    el.style.position = 'absolute';
-                    el.style.left = '-9999px';
-                    document.body.appendChild(el);
-                    const selected =
-                        document.getSelection().rangeCount > 0
-                        ? document.getSelection().getRangeAt(0)
-                        : false;
-                    el.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(el);
-                    if (selected) {
-                        document.getSelection().removeAllRanges();
-                        document.getSelection().addRange(selected);
-                    }
-                    showNotification('Disalin ke clipboard! (Siap di-paste ke Excel)');
-                } catch (err) {
-                    showNotification('Gagal menyalin teks.', 'error');
-                }
+                
+                navigator.clipboard.writeText(fullText)
+                    .then(() => triggerNotification('Salin ke Excel Berhasil! Format tab-separated siap di-paste ke Excel.'))
+                    .catch(() => triggerNotification('Gagal menyalin data.', 'error'));
             };
 
+            // Download CSV File
+            const downloadCSV = () => {
+                if (processedData.length === 0) {
+                    triggerNotification('Tidak ada data untuk diunduh.', 'error');
+                    return;
+                }
+                const headers = ['No', 'NIK', 'Provinsi', 'Tanggal Lahir', 'Hari Lahir', 'Jenis Kelamin', 'Umur', 'Zodiac', 'Shio', 'Status'];
+                const csvRows = [headers.join(',')];
+                
+                processedData.forEach((d, idx) => {
+                    const row = [
+                        idx + 1,
+                        `"${d.nik}"`,
+                        `"${d.provinsi}"`,
+                        `"${d.tanggalLahirStr}"`,
+                        `"${d.dayOfWeek}"`,
+                        `"${d.jenisKelamin}"`,
+                        d.isValid ? `"${d.umurDetail.years} Tahun ${d.umurDetail.months} Bulan"` : '"-"',
+                        d.isValid ? `"${d.zodiac.name}"` : '"-"',
+                        d.isValid ? `"${d.shio.name}"` : '"-"',
+                        d.isValid ? '"Valid"' : `"${d.errorReason}"`
+                    ];
+                    csvRows.push(row.join(','));
+                });
+                
+                const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `ekstraksi_nik_${Date.now()}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                triggerNotification('File CSV berhasil diunduh.');
+            };
+
+            // Download JSON File
+            const downloadJSON = () => {
+                if (processedData.length === 0) {
+                    triggerNotification('Tidak ada data untuk diunduh.', 'error');
+                    return;
+                }
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(processedData, null, 2));
+                const link = document.createElement("a");
+                link.setAttribute("href", dataStr);
+                link.setAttribute("download", `ekstraksi_nik_${Date.now()}.json`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                triggerNotification('File JSON berhasil diunduh.');
+            };
+
+            // Charts data calculations
+            const chartsData = useMemo(() => {
+                if (processedData.length === 0) return null;
+                
+                const validData = processedData.filter(d => d.isValid);
+                
+                // Age Groups
+                let ageGroups = {
+                    'Anak-anak (<12)': 0,
+                    'Remaja (12-25)': 0,
+                    'Dewasa (26-45)': 0,
+                    'Setengah Baya (46-60)': 0,
+                    'Lansia (>60)': 0
+                };
+                
+                // Provinces Frequency
+                let provincesFreq = {};
+
+                validData.forEach(d => {
+                    const age = d.umurDetail.years;
+                    if (age < 12) ageGroups['Anak-anak (<12)']++;
+                    else if (age <= 25) ageGroups['Remaja (12-25)']++;
+                    else if (age <= 45) ageGroups['Dewasa (26-45)']++;
+                    else if (age <= 60) ageGroups['Setengah Baya (46-60)']++;
+                    else ageGroups['Lansia (>60)']++;
+
+                    provincesFreq[d.provinsi] = (provincesFreq[d.provinsi] || 0) + 1;
+                });
+
+                const sortedProvinces = Object.entries(provincesFreq)
+                    .map(([name, count]) => ({ name, count }))
+                    .sort((a, b) => b.count - a.count);
+
+                return { ageGroups, sortedProvinces };
+            }, [processedData]);
+
+            // Interactive NIK structure explorer hover states
+            const [hoveredSegment, setHoveredSegment] = useState(null);
+            
             return (
-                <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans text-gray-800">
-                    {notification.show && (
-                        <div className={`fixed top-4 right-4 p-4 rounded shadow-lg transition-opacity duration-300 z-50 ${notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
-                        {notification.message}
+                <div className="flex flex-col flex-grow w-full">
+                    {/* Header */}
+                    <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-200/50 dark:border-slate-800/50 transition-all duration-300">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-fingerprint"><path d="M12 10a2 2 0 0 0-2 2c0 .991-.192 1.355-.384 1.718-.192.363-.448.845-.448 1.48C9.168 16.48 9.5 18 12 18s2.832-1.52 2.832-2.8c0-.636-.256-1.118-.448-1.48-.192-.363-.384-.727-.384-1.718a2 2 0 0 0-2-2z"/><path d="M8 12a4 4 0 0 1 8 0c0 .523-.213.91-.424 1.29-.212.38-.466.837-.466 1.51C15.11 16.51 14 19 12 19s-3.11-2.49-3.11-4.2c0-.673-.254-1.13-.466-1.51C8.213 12.91 8 12.523 8 12z"/><path d="M6 12a6 6 0 0 1 12 0c0 .034 0 .067-.002.1a3.298 3.298 0 0 0-.256-.039C16.924 11.944 16.5 11.5 16.5 11a4.5 4.5 0 0 0-9 0c0 .5-.424.944-1.242 1.061A3.298 3.298 0 0 0 6 12z"/><path d="M3 10.27c.18-.517.45-1.002.81-1.437A9.01 9.01 0 0 1 12 6a9.01 9.01 0 0 1 8.19 2.833c.36.435.63.92.81 1.437"/><path d="M14 21.9a10 10 0 0 1-10.9-4.7"/><path d="M20 17.2a10 10 0 0 0-1.7-8.3"/></svg>
+                                </div>
+                                <div>
+                                    <h1 className="text-base font-extrabold tracking-tight bg-gradient-to-r from-brand-600 to-indigo-500 dark:from-brand-400 dark:to-indigo-300 bg-clip-text text-transparent">
+                                        EKSTRAKTOR NIK
+                                    </h1>
+                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium tracking-widest uppercase">
+                                        Premium Parser & Analytics
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4">
+                                <div className="hidden sm:flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs px-2.5 py-1 rounded-full font-medium border border-emerald-500/20">
+                                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                                    100% Client-Side / Offline
+                                </div>
+                                <button 
+                                    onClick={toggleDarkMode}
+                                    className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+                                    aria-label="Toggle theme"
+                                    id="theme-toggle"
+                                >
+                                    {darkMode ? <IconSun /> : <IconMoon />}
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Content */}
+                    <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+                        
+                        {/* Notification Toasts */}
+                        <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-md w-full">
+                            {notifications.map(n => (
+                                <div 
+                                    key={n.id} 
+                                    className={`p-4 rounded-xl shadow-lg border transition-all duration-300 flex items-start gap-3 animate-slide-in ${
+                                        n.type === 'error' 
+                                            ? 'bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/60 dark:border-rose-900/60 dark:text-rose-200' 
+                                            : n.type === 'info'
+                                            ? 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/60 dark:border-blue-900/60 dark:text-blue-200'
+                                            : 'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/60 dark:border-emerald-900/60 dark:text-emerald-200'
+                                    }`}
+                                >
+                                    <div className="mt-0.5">
+                                        {n.type === 'error' ? <IconX /> : n.type === 'info' ? <IconInfo /> : <IconCheck />}
+                                    </div>
+                                    <p className="text-sm font-medium leading-tight">{n.message}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Top KPI Cards */}
+                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                            <div className="bg-white dark:bg-[#0f172a] p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform duration-300">
+                                <div className="p-3 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400">
+                                    <IconUsers />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Total NIK</p>
+                                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">{metrics.total}</h3>
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-[#0f172a] p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform duration-300">
+                                <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                    <IconCheck />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Valid</p>
+                                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">{metrics.valid}</h3>
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-[#0f172a] p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform duration-300">
+                                <div className="p-3 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                                    <IconX />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Gagal</p>
+                                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">{metrics.invalid}</h3>
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-[#0f172a] p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform duration-300 col-span-1">
+                                <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-venus-and-mars"><path d="M10 20H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6"/><circle cx="16" cy="16" r="4"/><path d="M16 12v-2"/><path d="M16 20h.01"/><path d="m9 15 3-3"/></svg>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">L / P Ratio</p>
+                                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-0.5">
+                                        {metrics.male}<span className="text-slate-300 dark:text-slate-700 mx-1">/</span>{metrics.female}
+                                    </h3>
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-[#0f172a] p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform duration-300 col-span-2 lg:col-span-1">
+                                <div className="p-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                                    <IconTrendingUp />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Rata-rata Umur</p>
+                                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">{metrics.avgAge} Thn</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Middle Workspaces */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                            
+                            {/* Input Column */}
+                            <div className="lg:col-span-4 flex flex-col gap-6">
+                                
+                                {/* Raw Input Panel */}
+                                <div 
+                                    className={`bg-white dark:bg-[#0f172a] p-5 rounded-3xl border transition-all duration-300 shadow-premium dark:shadow-premium-dark flex flex-col ${
+                                        isDragging 
+                                            ? 'border-brand-500 ring-4 ring-brand-500/15' 
+                                            : 'border-slate-100 dark:border-slate-800/80'
+                                    }`}
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={handleDrop}
+                                >
+                                    <div className="flex items-center justify-between mb-3.5">
+                                        <label htmlFor="nik-input" className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                                            <IconBookOpen />
+                                            Input NIK Indonesia
+                                        </label>
+                                        <button 
+                                            onClick={loadDemoData}
+                                            className="text-xs text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 font-semibold flex items-center gap-1 transition-colors"
+                                            title="Muat data contoh"
+                                        >
+                                            <IconSparkles /> Demo Data
+                                        </button>
+                                    </div>
+
+                                    {/* Textarea Dropzone */}
+                                    <div className="relative flex-grow">
+                                        <textarea
+                                            id="nik-input"
+                                            className="w-full h-72 p-4 bg-slate-50/50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-y font-mono text-sm placeholder-slate-400 dark:placeholder-slate-600 text-slate-800 dark:text-slate-200 transition-all duration-200 leading-relaxed"
+                                            placeholder="Contoh:&#10;3507121808580001&#10;3507116506690003&#10;&#10;Atau seret file .txt/.csv ke sini..."
+                                            value={rawInput}
+                                            onChange={(e) => setRawInput(e.target.value)}
+                                        />
+                                        {isDragging && (
+                                            <div className="absolute inset-0 bg-brand-500/10 dark:bg-brand-500/20 backdrop-blur-[2px] rounded-2xl flex flex-col items-center justify-center border-2 border-dashed border-brand-500 pointer-events-none transition-all duration-300">
+                                                <div className="p-3 bg-white dark:bg-slate-900 rounded-full shadow-lg text-brand-600 dark:text-brand-400 animate-bounce mb-2">
+                                                    <IconUpload />
+                                                </div>
+                                                <p className="text-sm font-bold text-brand-600 dark:text-brand-400">Lepas untuk Membaca File</p>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Mendukung berkas teks (.txt, .csv)</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex gap-3 mt-4">
+                                        <button
+                                            onClick={handleProcess}
+                                            className="flex-grow bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md shadow-brand-500/20 hover:shadow-brand-500/30 flex items-center justify-center gap-2 text-sm"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                                            Proses NIK
+                                        </button>
+                                        <button
+                                            onClick={handleClear}
+                                            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold p-3 rounded-xl transition-colors border border-slate-200/50 dark:border-slate-700/50"
+                                            title="Bersihkan input & hasil"
+                                        >
+                                            <IconTrash2 />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Privacy Info & Formula Box */}
+                                <div className="bg-gradient-to-br from-indigo-500/5 to-brand-500/5 dark:from-slate-900 dark:to-slate-950 p-5 rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <IconInfo />
+                                        <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-200">Keterangan & Struktur NIK</h3>
+                                    </div>
+                                    
+                                    {/* NIK segment hover explorer */}
+                                    <div className="space-y-3">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                                            Arahkan kursor Anda ke bagian angka NIK di bawah ini untuk melihat struktur kodenya secara detail:
+                                        </p>
+                                        
+                                        <div className="flex justify-center font-mono text-base font-extrabold tracking-wider bg-slate-100/50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 select-none overflow-x-auto">
+                                            <span 
+                                                onMouseEnter={() => setHoveredSegment('prov')}
+                                                onMouseLeave={() => setHoveredSegment(null)}
+                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'prov' ? 'bg-rose-200 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300' : 'text-slate-700 dark:text-slate-300'}`}
+                                            >35</span>
+                                            <span 
+                                                onMouseEnter={() => setHoveredSegment('kab')}
+                                                onMouseLeave={() => setHoveredSegment(null)}
+                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'kab' ? 'bg-amber-200 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300' : 'text-slate-700 dark:text-slate-300'}`}
+                                            >07</span>
+                                            <span 
+                                                onMouseEnter={() => setHoveredSegment('kec')}
+                                                onMouseLeave={() => setHoveredSegment(null)}
+                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'kec' ? 'bg-emerald-200 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300'}`}
+                                            >12</span>
+                                            <span 
+                                                onMouseEnter={() => setHoveredSegment('tgl')}
+                                                onMouseLeave={() => setHoveredSegment(null)}
+                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'tgl' ? 'bg-blue-200 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300'}`}
+                                            >18</span>
+                                            <span 
+                                                onMouseEnter={() => setHoveredSegment('bln')}
+                                                onMouseLeave={() => setHoveredSegment(null)}
+                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'bln' ? 'bg-violet-200 text-violet-800 dark:bg-violet-950/80 dark:text-violet-300' : 'text-slate-700 dark:text-slate-300'}`}
+                                            >08</span>
+                                            <span 
+                                                onMouseEnter={() => setHoveredSegment('thn')}
+                                                onMouseLeave={() => setHoveredSegment(null)}
+                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'thn' ? 'bg-fuchsia-200 text-fuchsia-800 dark:bg-fuchsia-950/80 dark:text-fuchsia-300' : 'text-slate-700 dark:text-slate-300'}`}
+                                            >58</span>
+                                            <span 
+                                                onMouseEnter={() => setHoveredSegment('urut')}
+                                                onMouseLeave={() => setHoveredSegment(null)}
+                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'urut' ? 'bg-slate-300 text-slate-800 dark:bg-slate-800 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'}`}
+                                            >0001</span>
+                                        </div>
+
+                                        <div className="min-h-[50px] bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-200/20 dark:border-slate-800/40 text-xs">
+                                            {hoveredSegment === 'prov' && (
+                                                <p className="text-slate-600 dark:text-slate-300"><strong className="text-rose-600 dark:text-rose-400">Digit 1-2 (Provinsi):</strong> Kode wilayah tingkat provinsi (misal: 35 adalah Jawa Timur).</p>
+                                            )}
+                                            {hoveredSegment === 'kab' && (
+                                                <p className="text-slate-600 dark:text-slate-300"><strong className="text-amber-600 dark:text-amber-400">Digit 3-4 (Kabupaten/Kota):</strong> Kode wilayah tingkat kabupaten atau kota.</p>
+                                            )}
+                                            {hoveredSegment === 'kec' && (
+                                                <p className="text-slate-600 dark:text-slate-300"><strong className="text-emerald-600 dark:text-emerald-400">Digit 5-6 (Kecamatan):</strong> Kode wilayah tingkat kecamatan.</p>
+                                            )}
+                                            {hoveredSegment === 'tgl' && (
+                                                <p className="text-slate-600 dark:text-slate-300"><strong className="text-blue-600 dark:text-blue-400">Digit 7-8 (Tanggal Lahir & L/P):</strong> Tanggal kelahiran. Untuk perempuan ditambah 40 (misal: 18 adalah laki-laki lahir tanggal 18, 58 adalah perempuan lahir tanggal 18).</p>
+                                            )}
+                                            {hoveredSegment === 'bln' && (
+                                                <p className="text-slate-600 dark:text-slate-300"><strong className="text-violet-600 dark:text-violet-400">Digit 9-10 (Bulan Lahir):</strong> Bulan kelahiran dari 01 hingga 12.</p>
+                                            )}
+                                            {hoveredSegment === 'thn' && (
+                                                <p className="text-slate-600 dark:text-slate-300"><strong className="text-fuchsia-600 dark:text-fuchsia-400">Digit 11-12 (Tahun Lahir):</strong> Dua digit terakhir tahun kelahiran (Jika &le; 30 dianggap tahun 2000-an, jika &gt; 30 dianggap 1900-an).</p>
+                                            )}
+                                            {hoveredSegment === 'urut' && (
+                                                <p className="text-slate-600 dark:text-slate-300"><strong>Digit 13-16 (Nomor Urut):</strong> Nomor registrasi sistematis kependudukan unik berurutan dimulai dari 0001.</p>
+                                            )}
+                                            {!hoveredSegment && (
+                                                <p className="text-slate-400 dark:text-slate-500 italic text-center">Arahkan kursor Anda ke salah satu segmen angka di atas.</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Output & Analytics Column */}
+                            <div className="lg:col-span-8 flex flex-col gap-6">
+                                
+                                {/* Right Side Card Container */}
+                                <div className="bg-white dark:bg-[#0f172a] rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark overflow-hidden flex flex-col min-h-[580px]">
+                                    
+                                    {/* Tabs and Actions bar */}
+                                    <div className="px-5 pt-4 pb-0 border-b border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50 dark:bg-slate-900/30">
+                                        <div className="flex gap-2">
+                                            <button 
+                                                onClick={() => setActiveTab('table')}
+                                                className={`pb-3 pt-1 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+                                                    activeTab === 'table' 
+                                                        ? 'border-brand-500 text-brand-600 dark:text-brand-400' 
+                                                        : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                                                }`}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-table-properties"><path d="M12 3v18"/><path d="M3 12h18"/><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
+                                                Daftar Data NIK
+                                            </button>
+                                            <button 
+                                                onClick={() => setActiveTab('analytics')}
+                                                className={`pb-3 pt-1 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+                                                    activeTab === 'analytics' 
+                                                        ? 'border-brand-500 text-brand-600 dark:text-brand-400' 
+                                                        : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                                                }`}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                                                Analisis & Grafik
+                                            </button>
+                                        </div>
+
+                                        {/* Download menu (visible if data exists) */}
+                                        {processedData.length > 0 && (
+                                            <div className="flex gap-2 pb-3 pt-1">
+                                                <button
+                                                    onClick={copyToClipboard}
+                                                    className="bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold py-1.5 px-3 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 shadow-sm transition-colors"
+                                                    title="Copy format tabbed, siap paste di Excel"
+                                                >
+                                                    <IconCopy /> Copy Excel
+                                                </button>
+                                                <button
+                                                    onClick={downloadCSV}
+                                                    className="bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold py-1.5 px-3 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 shadow-sm transition-colors"
+                                                >
+                                                    <IconDownload /> CSV
+                                                </button>
+                                                <button
+                                                    onClick={downloadJSON}
+                                                    className="bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold py-1.5 px-3 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 shadow-sm transition-colors"
+                                                >
+                                                    JSON
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Content Area */}
+                                    <div className="flex-grow flex flex-col p-5">
+                                        {processedData.length === 0 ? (
+                                            // Empty state
+                                            <div className="flex-grow flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 p-8 text-center space-y-4">
+                                                <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-full border border-slate-100 dark:border-slate-800/80 shadow-inner">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-database-backup text-slate-300 dark:text-slate-700"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/><path d="M12 9h.01"/><path d="M12 15h.01"/><path d="M10 12h4"/></svg>
+                                                </div>
+                                                <div className="max-w-md">
+                                                    <p className="font-bold text-slate-700 dark:text-slate-300 text-base">Belum ada NIK yang diproses</p>
+                                                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5 leading-relaxed">
+                                                        Masukkan daftar NIK Anda pada kolom masukan di sebelah kiri, kemudian tekan tombol <strong>Proses NIK</strong> untuk menampilkan hasil ekstraksi.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ) : activeTab === 'table' ? (
+                                            // TABLE VIEW
+                                            <div className="flex-grow flex flex-col gap-4">
+                                                
+                                                {/* Filter Options Header */}
+                                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                                                    
+                                                    {/* Search query */}
+                                                    <div className="relative sm:col-span-1">
+                                                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-600">
+                                                            <IconSearch />
+                                                        </span>
+                                                        <input 
+                                                            type="text"
+                                                            placeholder="Cari NIK/Wilayah..."
+                                                            className="w-full pl-9 pr-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-700 dark:text-slate-200 transition-all"
+                                                            value={searchQuery}
+                                                            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                                                        />
+                                                    </div>
+
+                                                    {/* Filter Gender */}
+                                                    <div>
+                                                        <select
+                                                            className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-700 dark:text-slate-200"
+                                                            value={filterGender}
+                                                            onChange={(e) => { setFilterGender(e.target.value); setCurrentPage(1); }}
+                                                        >
+                                                            <option value="all">Semua Gender</option>
+                                                            <option value="L">Laki-Laki</option>
+                                                            <option value="P">Perempuan</option>
+                                                        </select>
+                                                    </div>
+
+                                                    {/* Filter Status Validity */}
+                                                    <div>
+                                                        <select
+                                                            className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-700 dark:text-slate-200"
+                                                            value={filterValidity}
+                                                            onChange={(e) => { setFilterValidity(e.target.value); setCurrentPage(1); }}
+                                                        >
+                                                            <option value="all">Semua Status</option>
+                                                            <option value="valid">Hanya Valid</option>
+                                                            <option value="invalid">Hanya Gagal</option>
+                                                        </select>
+                                                    </div>
+
+                                                    {/* Filter Province */}
+                                                    <div>
+                                                        <select
+                                                            className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-700 dark:text-slate-200"
+                                                            value={filterProvince}
+                                                            onChange={(e) => { setFilterProvince(e.target.value); setCurrentPage(1); }}
+                                                        >
+                                                            <option value="all">Semua Wilayah</option>
+                                                            {uniqueProvinces.map(p => (
+                                                                <option key={p.code} value={p.code}>{p.name}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                {/* Table Data */}
+                                                <div className="flex-grow overflow-x-auto border border-slate-100 dark:border-slate-800/80 rounded-2xl">
+                                                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                                                        <thead className="bg-slate-50 dark:bg-slate-900/60 text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase tracking-wider">
+                                                            <tr>
+                                                                <th scope="col" className="px-5 py-3 text-center w-12">No</th>
+                                                                <th scope="col" className="px-5 py-3 text-left">NIK</th>
+                                                                <th scope="col" className="px-5 py-3 text-left">Wilayah</th>
+                                                                <th scope="col" className="px-5 py-3 text-center">Tanggal Lahir</th>
+                                                                <th scope="col" className="px-5 py-3 text-center">L/P</th>
+                                                                <th scope="col" className="px-5 py-3 text-center">Umur</th>
+                                                                <th scope="col" className="px-5 py-3 text-center w-24">Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 bg-white dark:bg-[#0f172a] text-xs">
+                                                            {paginatedData.map((item, index) => {
+                                                                const globalIndex = (currentPage - 1) * itemsPerPage + index + 1;
+                                                                return (
+                                                                    <tr 
+                                                                        key={index} 
+                                                                        onClick={() => {
+                                                                            if (item.isValid) {
+                                                                                setSelectedNikDetails(item);
+                                                                                // set default values for KTP fields
+                                                                                setKtpName("BUDI SANTOSO");
+                                                                                setKtpAddress("JL. MAWAR INDAH NO. 45");
+                                                                                setKtpRtrw("004/012");
+                                                                                setKtpKelDesa("PONDOK PINANG");
+                                                                                setKtpKecamatan("KEBAYORAN LAMA");
+                                                                                setKtpAgama("ISLAM");
+                                                                                setKtpStatus("BELUM KAWIN");
+                                                                                setKtpPekerjaan("KARYAWAN SWASTA");
+                                                                                setKtpDarah("O");
+                                                                            } else {
+                                                                                triggerNotification(`NIK Gagal: ${item.errorReason}`, 'error');
+                                                                            }
+                                                                        }}
+                                                                        className={`hover:bg-brand-50/40 dark:hover:bg-brand-950/20 transition-all cursor-pointer ${
+                                                                            !item.isValid ? 'bg-rose-500/5 hover:bg-rose-500/10' : ''
+                                                                        }`}
+                                                                    >
+                                                                        <td className="px-5 py-3 whitespace-nowrap text-center font-bold text-slate-400 dark:text-slate-500">{globalIndex}</td>
+                                                                        <td className={`px-5 py-3 whitespace-nowrap font-mono font-bold tracking-wide ${!item.isValid ? 'text-rose-500 line-through' : 'text-slate-800 dark:text-slate-200'}`}>{item.nik}</td>
+                                                                        <td className="px-5 py-3 whitespace-nowrap text-slate-600 dark:text-slate-400 font-semibold">{item.provinsi}</td>
+                                                                        <td className="px-5 py-3 whitespace-nowrap text-center text-slate-500 dark:text-slate-400 font-medium">
+                                                                            {item.isValid ? (
+                                                                                <span>{item.dayOfWeek}, {item.tanggalLahirStr}</span>
+                                                                            ) : '-'}
+                                                                        </td>
+                                                                        <td className="px-5 py-3 whitespace-nowrap text-center">
+                                                                            {item.isValid ? (
+                                                                                <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider
+                                                                                    ${item.jenisKelamin === 'Laki-Laki' 
+                                                                                        ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/10' 
+                                                                                        : 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/10'
+                                                                                    }`}
+                                                                                >
+                                                                                    {item.jenisKelamin === 'Laki-Laki' ? 'L' : 'P'}
+                                                                                </span>
+                                                                            ) : '-'}
+                                                                        </td>
+                                                                        <td className="px-5 py-3 whitespace-nowrap text-center text-slate-600 dark:text-slate-400 font-medium">
+                                                                            {item.isValid ? `${item.umurDetail.years} Thn` : '-'}
+                                                                        </td>
+                                                                        <td className="px-5 py-3 whitespace-nowrap text-center">
+                                                                            {item.isValid ? (
+                                                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/10">
+                                                                                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                                                                    Valid
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span 
+                                                                                    className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/10 cursor-help"
+                                                                                    title={item.errorReason}
+                                                                                >
+                                                                                    <span className="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+                                                                                    Gagal
+                                                                                </span>
+                                                                            )}
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            })}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+                                                {/* Pagination and Summary bar */}
+                                                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-semibold text-slate-400 dark:text-slate-500 mt-2">
+                                                    <div>
+                                                        Menampilkan {Math.min(filteredAndSortedData.length, (currentPage - 1) * itemsPerPage + 1)} - {Math.min(filteredAndSortedData.length, currentPage * itemsPerPage)} dari {filteredAndSortedData.length} data
+                                                    </div>
+                                                    
+                                                    {totalPages > 1 && (
+                                                        <div className="flex items-center gap-1">
+                                                            <button
+                                                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                                                disabled={currentPage === 1}
+                                                                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors"
+                                                            >
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+                                                            </button>
+                                                            
+                                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                                                <button
+                                                                    key={page}
+                                                                    onClick={() => setCurrentPage(page)}
+                                                                    className={`w-7 h-7 rounded-lg border text-center font-bold transition-all ${
+                                                                        currentPage === page 
+                                                                            ? 'bg-brand-500 border-brand-500 text-white shadow-sm shadow-brand-500/20' 
+                                                                            : 'border-slate-200 dark:border-slate-850 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850'
+                                                                    }`}
+                                                                >
+                                                                    {page}
+                                                                </button>
+                                                            ))}
+
+                                                            <button
+                                                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                                                disabled={currentPage === totalPages}
+                                                                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors"
+                                                            >
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <p className="text-[10px] text-slate-400 dark:text-slate-500 italic mt-1 text-center">
+                                                    💡 Tip: Klik salah satu baris data di atas untuk memvisualisasikan KTP secara interaktif.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            // ANALYTICS VIEW
+                                            <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                
+                                                {/* Left Column: Gender & Age Charts */}
+                                                <div className="space-y-6">
+                                                    {/* Gender Split (Visual progress ring) */}
+                                                    <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 p-5 rounded-2xl space-y-4">
+                                                        <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                                            Distribusi Jenis Kelamin
+                                                        </h3>
+                                                        
+                                                        <div className="flex items-center justify-around">
+                                                            {/* SVG Progress Ring */}
+                                                            <div className="relative w-28 h-28">
+                                                                <svg className="w-full h-full transform -rotate-95" viewBox="0 0 36 36">
+                                                                    {/* Background circle */}
+                                                                    <circle className="text-slate-200 dark:text-slate-800" strokeWidth="3" stroke="currentColor" fill="none" cx="18" cy="18" r="15.915"></circle>
+                                                                    
+                                                                    {/* Male segment (blue) */}
+                                                                    <circle 
+                                                                        className="text-blue-500" 
+                                                                        strokeWidth="3.2" 
+                                                                        strokeDasharray={`${metrics.valid > 0 ? (metrics.male / metrics.valid) * 100 : 0} ${100 - (metrics.valid > 0 ? (metrics.male / metrics.valid) * 100 : 0)}`} 
+                                                                        strokeDashoffset="0" 
+                                                                        strokeLinecap="round" 
+                                                                        stroke="currentColor" 
+                                                                        fill="none" 
+                                                                        cx="18" 
+                                                                        cy="18" 
+                                                                        r="15.915"
+                                                                    ></circle>
+                                                                    
+                                                                    {/* Female segment (pink) - layered using offset */}
+                                                                    {metrics.female > 0 && (
+                                                                        <circle 
+                                                                            className="text-pink-500" 
+                                                                            strokeWidth="3.2" 
+                                                                            strokeDasharray={`${(metrics.female / metrics.valid) * 100} ${100 - (metrics.female / metrics.valid) * 100}`} 
+                                                                            strokeDashoffset={`${100 - (metrics.male / metrics.valid) * 100}`} 
+                                                                            strokeLinecap="round" 
+                                                                            stroke="currentColor" 
+                                                                            fill="none" 
+                                                                            cx="18" 
+                                                                            cy="18" 
+                                                                            r="15.915"
+                                                                        ></circle>
+                                                                    )}
+                                                                </svg>
+                                                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                                    <span className="text-xl font-extrabold text-slate-800 dark:text-white">{metrics.valid}</span>
+                                                                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase">NIK Valid</span>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Text description values */}
+                                                            <div className="space-y-2 text-xs font-semibold">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="w-3 h-3 bg-blue-500 rounded-full"></span>
+                                                                    <span className="text-slate-500 dark:text-slate-400">Laki-Laki:</span>
+                                                                    <span className="text-slate-800 dark:text-slate-200">{metrics.male} ({metrics.valid > 0 ? Math.round((metrics.male / metrics.valid) * 100) : 0}%)</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="w-3 h-3 bg-pink-500 rounded-full"></span>
+                                                                    <span className="text-slate-500 dark:text-slate-400">Perempuan:</span>
+                                                                    <span className="text-slate-800 dark:text-slate-200">{metrics.female} ({metrics.valid > 0 ? Math.round((metrics.female / metrics.valid) * 100) : 0}%)</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Age Groups Chart */}
+                                                    <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 p-5 rounded-2xl space-y-4">
+                                                        <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bar-chart-2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+                                                            Distribusi Kelompok Umur
+                                                        </h3>
+
+                                                        {chartsData && (
+                                                            <div className="space-y-3">
+                                                                {Object.entries(chartsData.ageGroups).map(([group, count]) => {
+                                                                    const pct = metrics.valid > 0 ? (count / metrics.valid) * 100 : 0;
+                                                                    return (
+                                                                        <div key={group} className="space-y-1 text-xs">
+                                                                            <div className="flex justify-between font-semibold">
+                                                                                <span className="text-slate-500 dark:text-slate-400">{group}</span>
+                                                                                <span className="text-slate-800 dark:text-slate-200">{count} data ({Math.round(pct)}%)</span>
+                                                                            </div>
+                                                                            <div className="w-full bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                                                                                <div 
+                                                                                    style={{ width: `${pct}%` }} 
+                                                                                    className="bg-brand-500 h-full rounded-full transition-all duration-500"
+                                                                                ></div>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Right Column: Province list */}
+                                                <div className="space-y-6">
+                                                    <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 p-5 rounded-2xl space-y-4">
+                                                        <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                                                            <IconMapPin />
+                                                            Distribusi Wilayah Asal (Provinsi)
+                                                        </h3>
+
+                                                        {chartsData && chartsData.sortedProvinces.length > 0 ? (
+                                                            <div className="space-y-3.5 max-h-[300px] overflow-y-auto pr-1">
+                                                                {chartsData.sortedProvinces.map((prov) => {
+                                                                    const pct = metrics.valid > 0 ? (prov.count / metrics.valid) * 100 : 0;
+                                                                    return (
+                                                                        <div key={prov.name} className="space-y-1 text-xs">
+                                                                            <div className="flex justify-between font-semibold">
+                                                                                <span className="text-slate-700 dark:text-slate-300">{prov.name}</span>
+                                                                                <span className="text-slate-500 dark:text-slate-400">{prov.count} data ({Math.round(pct)}%)</span>
+                                                                            </div>
+                                                                            <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                                                                <div 
+                                                                                    style={{ width: `${pct}%` }} 
+                                                                                    className="bg-indigo-500 h-full rounded-full transition-all duration-500"
+                                                                                ></div>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        ) : (
+                                                            <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-8">Tidak ada data wilayah valid.</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="w-full py-6 mt-12 bg-white dark:bg-[#080b13] border-t border-slate-150 dark:border-slate-900 text-center text-xs font-semibold text-slate-400 dark:text-slate-500">
+                        <p>&copy; {new Date().getFullYear()} Dashboard Ekstraktor NIK Premium | Developed by <span className="text-brand-500 dark:text-brand-400">ADEX IDN</span></p>
+                        <p className="text-[10px] text-slate-350 dark:text-slate-650 mt-1">100% data diproses di sisi klien secara lokal untuk menjaga kerahasiaan identitas kependudukan.</p>
+                    </footer>
+
+                    {/* KTP Mockup Preview Modal */}
+                    {selectedNikDetails && (
+                        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300">
+                            
+                            <div className="bg-white dark:bg-[#0f172a] rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 max-w-4xl w-full overflow-hidden flex flex-col md:flex-row transition-all duration-300 animate-scale-up">
+                                
+                                {/* Left Side: Interactive Editor */}
+                                <div className="p-6 md:w-1/2 border-r border-slate-100 dark:border-slate-850 flex flex-col gap-4 bg-slate-50/40 dark:bg-slate-900/20">
+                                    <div>
+                                        <h3 className="text-base font-extrabold text-slate-800 dark:text-white">Sesuaikan Identitas KTP</h3>
+                                        <p className="text-xs text-slate-450 dark:text-slate-550 mt-1">Lengkapi data di bawah ini untuk mensimulasikan visualisasi KTP Anda secara utuh.</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 text-xs">
+                                        <div className="col-span-2 space-y-1">
+                                            <label className="font-bold text-slate-500 dark:text-slate-400">Nama Lengkap</label>
+                                            <input 
+                                                type="text" 
+                                                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
+                                                value={ktpName}
+                                                onChange={(e) => setKtpName(e.target.value.toUpperCase())}
+                                            />
+                                        </div>
+
+                                        <div className="col-span-2 space-y-1">
+                                            <label className="font-bold text-slate-500 dark:text-slate-400">Alamat</label>
+                                            <input 
+                                                type="text" 
+                                                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
+                                                value={ktpAddress}
+                                                onChange={(e) => setKtpAddress(e.target.value.toUpperCase())}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <label className="font-bold text-slate-500 dark:text-slate-400">RT / RW</label>
+                                            <input 
+                                                type="text" 
+                                                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
+                                                value={ktpRtrw}
+                                                onChange={(e) => setKtpRtrw(e.target.value.toUpperCase())}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <label className="font-bold text-slate-500 dark:text-slate-400">Kel / Desa</label>
+                                            <input 
+                                                type="text" 
+                                                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
+                                                value={ktpKelDesa}
+                                                onChange={(e) => setKtpKelDesa(e.target.value.toUpperCase())}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <label className="font-bold text-slate-500 dark:text-slate-400">Kecamatan</label>
+                                            <input 
+                                                type="text" 
+                                                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
+                                                value={ktpKecamatan}
+                                                onChange={(e) => setKtpKecamatan(e.target.value.toUpperCase())}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <label className="font-bold text-slate-500 dark:text-slate-400">Gol. Darah</label>
+                                            <select 
+                                                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
+                                                value={ktpDarah}
+                                                onChange={(e) => setKtpDarah(e.target.value)}
+                                            >
+                                                <option value="A">A</option>
+                                                <option value="B">B</option>
+                                                <option value="AB">AB</option>
+                                                <option value="O">O</option>
+                                                <option value="-">-</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <label className="font-bold text-slate-500 dark:text-slate-400">Agama</label>
+                                            <select 
+                                                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
+                                                value={ktpAgama}
+                                                onChange={(e) => setKtpAgama(e.target.value)}
+                                            >
+                                                <option value="ISLAM">ISLAM</option>
+                                                <option value="KRISTEN">KRISTEN</option>
+                                                <option value="KATOLIK">KATOLIK</option>
+                                                <option value="HINDU">HINDU</option>
+                                                <option value="BUDHA">BUDHA</option>
+                                                <option value="KHONGHUCU">KHONGHUCU</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <label className="font-bold text-slate-500 dark:text-slate-400">Status Perkawinan</label>
+                                            <select 
+                                                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
+                                                value={ktpStatus}
+                                                onChange={(e) => setKtpStatus(e.target.value)}
+                                            >
+                                                <option value="BELUM KAWIN">BELUM KAWIN</option>
+                                                <option value="KAWIN">KAWIN</option>
+                                                <option value="CERAI HIDUP">CERAI HIDUP</option>
+                                                <option value="CERAI MATI">CERAI MATI</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="col-span-2 space-y-1">
+                                            <label className="font-bold text-slate-500 dark:text-slate-400">Pekerjaan</label>
+                                            <input 
+                                                type="text" 
+                                                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
+                                                value={ktpPekerjaan}
+                                                onChange={(e) => setKtpPekerjaan(e.target.value.toUpperCase())}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Right Side: Visual KTP Card Mockup */}
+                                <div className="p-6 md:w-1/2 flex flex-col justify-between gap-6 bg-slate-100 dark:bg-slate-950/60">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-sm font-extrabold text-slate-700 dark:text-slate-300">Simulasi Kartu KTP</h4>
+                                        <button 
+                                            onClick={() => setSelectedNikDetails(null)}
+                                            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-350 transition-colors"
+                                        >
+                                            <IconX />
+                                        </button>
+                                    </div>
+
+                                    {/* KTP CARD VISUAL */}
+                                    <div className="w-full aspect-[1.586/1] bg-gradient-to-br from-cyan-400 to-sky-500 text-[#0f172a] rounded-2xl shadow-xl p-4 flex flex-col justify-between border-2 border-cyan-300 relative overflow-hidden select-none font-mono text-[9px] font-bold">
+                                        
+                                        {/* Abstract background watermark lines */}
+                                        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-300 via-emerald-600 to-indigo-900 pointer-events-none"></div>
+                                        
+                                        {/* KTP Title Header */}
+                                        <div className="text-center space-y-0.5 z-10 border-b-2 border-slate-900/20 pb-1">
+                                            <div className="text-[10px] tracking-widest font-extrabold uppercase">PROVINSI {selectedNikDetails.provinsi}</div>
+                                            <div className="text-[8px] tracking-wide uppercase">KABUPATEN ADMINISTRATIF KTP PARSER</div>
+                                        </div>
+
+                                        {/* NIK Number */}
+                                        <div className="z-10 mt-1 flex items-center gap-2">
+                                            <span className="text-[10px] tracking-widest">NIK</span>
+                                            <span className="text-xs font-extrabold tracking-wider bg-slate-900/10 px-1.5 py-0.5 rounded">{selectedNikDetails.nik}</span>
+                                        </div>
+
+                                        {/* Main Details Body split */}
+                                        <div className="flex justify-between items-stretch gap-2 z-10 flex-grow mt-1 leading-relaxed">
+                                            {/* Data fields column */}
+                                            <div className="flex-grow space-y-0.5">
+                                                <div className="flex">
+                                                    <span className="w-24">Nama</span>
+                                                    <span className="mr-1">:</span>
+                                                    <span className="flex-grow uppercase truncate max-w-[170px]">{ktpName}</span>
+                                                </div>
+                                                <div className="flex">
+                                                    <span className="w-24">Tempat/Tgl Lahir</span>
+                                                    <span className="mr-1">:</span>
+                                                    <span className="uppercase truncate max-w-[170px]">{selectedNikDetails.provinsi}, {selectedNikDetails.tanggalLahirStr}</span>
+                                                </div>
+                                                <div className="flex">
+                                                    <span className="w-24">Jenis Kelamin</span>
+                                                    <span className="mr-1">:</span>
+                                                    <span className="uppercase">{selectedNikDetails.jenisKelamin}</span>
+                                                    <span className="ml-4 w-12">Gol. Darah : {ktpDarah}</span>
+                                                </div>
+                                                <div className="flex">
+                                                    <span className="w-24">Alamat</span>
+                                                    <span className="mr-1">:</span>
+                                                    <span className="flex-grow uppercase truncate max-w-[170px]">{ktpAddress}</span>
+                                                </div>
+                                                <div className="flex pl-3">
+                                                    <span className="w-[84px]">RT/RW</span>
+                                                    <span className="mr-1">:</span>
+                                                    <span>{ktpRtrw}</span>
+                                                </div>
+                                                <div className="flex pl-3">
+                                                    <span className="w-[84px]">Kel/Desa</span>
+                                                    <span className="mr-1">:</span>
+                                                    <span className="uppercase truncate max-w-[170px]">{ktpKelDesa}</span>
+                                                </div>
+                                                <div className="flex pl-3">
+                                                    <span className="w-[84px]">Kecamatan</span>
+                                                    <span className="mr-1">:</span>
+                                                    <span className="uppercase truncate max-w-[170px]">{ktpKecamatan}</span>
+                                                </div>
+                                                <div className="flex">
+                                                    <span className="w-24">Agama</span>
+                                                    <span className="mr-1">:</span>
+                                                    <span>{ktpAgama}</span>
+                                                </div>
+                                                <div className="flex">
+                                                    <span className="w-24">Status Perkawinan</span>
+                                                    <span className="mr-1">:</span>
+                                                    <span>{ktpStatus}</span>
+                                                </div>
+                                                <div className="flex">
+                                                    <span className="w-24">Pekerjaan</span>
+                                                    <span className="mr-1">:</span>
+                                                    <span className="uppercase truncate max-w-[170px]">{ktpPekerjaan}</span>
+                                                </div>
+                                                <div className="flex">
+                                                    <span className="w-24">Kewarganegaraan</span>
+                                                    <span className="mr-1">:</span>
+                                                    <span>WNI</span>
+                                                </div>
+                                                <div className="flex">
+                                                    <span className="w-24">Berlaku Hingga</span>
+                                                    <span className="mr-1">:</span>
+                                                    <span className="tracking-wide">SEUMUR HIDUP</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Photo & Signature Column */}
+                                            <div className="w-20 flex flex-col justify-between items-center text-center mt-1 pt-1.5 pb-0.5">
+                                                {/* Simulated Photo */}
+                                                <div className="w-16 h-20 bg-slate-900/10 border border-slate-900/25 rounded flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-xs">
+                                                    {selectedNikDetails.jenisKelamin === 'Laki-Laki' ? (
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 text-slate-800/60">
+                                                            <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clipRule="evenodd" />
+                                                        </svg>
+                                                    ) : (
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 text-slate-800/60">
+                                                            <path fillRule="evenodd" d="M8.25 6.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM15.75 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2.25 18a8.25 8.25 0 0 1 16.5 0v.75a.75.75 0 0 1-.75.75H3a.75.75 0 0 1-.75-.75V18Z" clipRule="evenodd" />
+                                                        </svg>
+                                                    )}
+                                                    <span className="absolute bottom-1 bg-white/70 backdrop-blur-xs px-1 text-[6px] tracking-wide uppercase font-extrabold rounded">PHOTO</span>
+                                                </div>
+
+                                                {/* Simulated Signature */}
+                                                <div className="flex flex-col items-center">
+                                                    <span className="text-[6px] text-slate-800/40 uppercase mb-0.5">TANDA TANGAN</span>
+                                                    <div className="w-14 h-6 border-b border-dashed border-slate-900/30 flex items-center justify-center opacity-55">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" className="w-full h-full text-slate-800">
+                                                            <path d="M10 20 Q 20 5, 40 25 T 70 15 T 90 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Additional info widgets (Zodiac, Shio) */}
+                                    <div className="grid grid-cols-2 gap-3 text-xs">
+                                        <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/80 shadow-sm flex items-center gap-3">
+                                            <div className="text-2xl">{selectedNikDetails.zodiac.emoji}</div>
+                                            <div>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase">Zodiak</p>
+                                                <p className="font-extrabold text-slate-800 dark:text-slate-100">{selectedNikDetails.zodiac.name}</p>
+                                                <p className="text-[9px] text-slate-400 dark:text-slate-500 font-medium italic mt-0.5">{selectedNikDetails.zodiac.desc}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/80 shadow-sm flex items-center gap-3">
+                                            <div className="text-2xl">{selectedNikDetails.shio.emoji}</div>
+                                            <div>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase">Shio ({selectedNikDetails.shio.element})</p>
+                                                <p className="font-extrabold text-slate-800 dark:text-slate-100">{selectedNikDetails.shio.name}</p>
+                                                <p className="text-[9px] text-slate-400 dark:text-slate-500 font-medium italic mt-0.5 truncate max-w-[110px]">{selectedNikDetails.shio.nature}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="col-span-2 bg-brand-500/5 dark:bg-brand-500/10 p-3 rounded-xl border border-brand-500/10 flex items-center gap-3">
+                                            <div className="text-xl">🎂</div>
+                                            <div>
+                                                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase">Detail Umur Saat Ini</p>
+                                                <p className="font-extrabold text-brand-700 dark:text-brand-300">
+                                                    {selectedNikDetails.umurDetail.years} Tahun, {selectedNikDetails.umurDetail.months} Bulan, {selectedNikDetails.umurDetail.days} Hari
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
-
-                    <div className="max-w-6xl mx-auto space-y-6">
-                        <header className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <h1 className="text-2xl md:text-3xl font-bold text-blue-700 flex items-center gap-2">
-                            <IconInfo />
-                            Dashboard Data NIK
-                        </h1>
-                        <p className="text-gray-600 mt-2 text-sm md:text-base">
-                            Masukkan daftar NIK (Nomor Induk Kependudukan) untuk secara otomatis mengekstrak Tanggal Lahir dan Jenis Kelamin berdasarkan kode di dalamnya.
-                        </p>
-                        </header>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-1 flex flex-col gap-4">
-                            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex-grow flex flex-col">
-                            <label htmlFor="nik-input" className="block text-sm font-semibold text-gray-700 mb-2">
-                                Paste NIK di sini (satu NIK per baris):
-                            </label>
-                            <textarea
-                                id="nik-input"
-                                className="w-full h-64 lg:flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-y font-mono text-sm placeholder-gray-400"
-                                placeholder="Contoh:&#10;3507121808580001&#10;3507116506690003"
-                                value={rawInput}
-                                onChange={handleInputChange}
-                            />
-                            
-                            <div className="flex gap-2 mt-4">
-                                <button
-                                onClick={handleProcess}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-                                >
-                                <IconUpload /> Proses NIK
-                                </button>
-                                <button
-                                onClick={handleClear}
-                                className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center"
-                                title="Bersihkan input dan hasil"
-                                >
-                                <IconTrash2 />
-                                </button>
-                            </div>
-                            </div>
-                            
-                            <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl">
-                            <h3 className="text-sm font-semibold text-blue-800 mb-1 flex items-center gap-1">
-                                <IconInfoSmall /> Info Rumus
-                            </h3>
-                            <p className="text-xs text-blue-700 leading-relaxed">
-                                Aplikasi by: ADEX IDN<br/>
-                                <code className="bg-blue-100 px-1 py-0.5 rounded text-blue-900 mt-1 inline-block break-all block">Tgl Lahir: MOD(DD, 40)/MM/IF(YY&lt;=30,20YY,19YY)</code><br/>
-                                <code className="bg-blue-100 px-1 py-0.5 rounded text-blue-900 mt-1 inline-block break-all block">L/P: IF(DD&gt;40, "P", "L")</code>
-                            </p>
-                            </div>
-                        </div>
-
-                        {}
-                        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50">
-                            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                Hasil Ekstraksi <span className="bg-blue-100 text-blue-800 text-xs py-1 px-2 rounded-full">{processedData.length} Data</span>
-                            </h2>
-                            
-                            <div className="flex gap-2">
-                                <button
-                                onClick={handleCopyToClipboard}
-                                disabled={processedData.length === 0}
-                                className={`py-1.5 px-3 rounded-md flex items-center gap-1.5 text-sm font-medium transition-colors ${
-                                    processedData.length > 0 
-                                    ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 shadow-sm' 
-                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                                }`}
-                                >
-                                <IconCopy /> Copy untuk Excel
-                                </button>
-                            </div>
-                            </div>
-
-                            <div className="overflow-x-auto flex-grow h-[500px]">
-                            {processedData.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-gray-400 p-8 text-center space-y-3">
-                                <IconDownloadBig />
-                                <p>Belum ada data. Silakan paste NIK di kolom sebelah kiri dan klik "Proses NIK".</p>
-                                </div>
-                            ) : (
-                                <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
-                                    <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-12 text-center">
-                                        No
-                                    </th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                        NIK
-                                    </th>
-                                    <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                        Tanggal Lahir
-                                    </th>
-                                    <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                        L/P
-                                    </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-100 font-mono text-sm">
-                                    {processedData.map((item, index) => (
-                                    <tr key={index} className={`hover:bg-blue-50/30 transition-colors ${!item.isValid ? 'bg-red-50' : ''}`}>
-                                        <td className="px-6 py-3 whitespace-nowrap text-gray-500 text-center">
-                                        {index + 1}
-                                        </td>
-                                        <td className={`px-6 py-3 whitespace-nowrap font-medium ${!item.isValid ? 'text-red-600' : 'text-gray-900'}`}>
-                                        {item.nik}
-                                        </td>
-                                        <td className={`px-6 py-3 whitespace-nowrap text-center ${!item.isValid ? 'text-red-500' : 'text-gray-600'}`}>
-                                        {item.tanggalLahir}
-                                        </td>
-                                        <td className="px-6 py-3 whitespace-nowrap text-center">
-                                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold
-                                            ${item.jenisKelamin === 'L' ? 'bg-blue-100 text-blue-800' : 
-                                            item.jenisKelamin === 'P' ? 'bg-pink-100 text-pink-800' : 
-                                            'bg-gray-100 text-gray-500'}`}
-                                        >
-                                            {item.jenisKelamin}
-                                        </span>
-                                        </td>
-                                    </tr>
-                                    ))}
-                                </tbody>
-                                </table>
-                            )}
-                            </div>
-                        </div>
-                        </div>
-                    </div>
                 </div>
             );
         };
