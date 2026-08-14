@@ -1363,60 +1363,7 @@
                             ))}
                         </div>
 
-                        {/* Top KPI Cards */}
-                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                            <div className="bg-white dark:bg-[#0f172a] p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform duration-300">
-                                <div className="p-3 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400">
-                                    <IconUsers />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Total NIK</p>
-                                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">{metrics.total}</h3>
-                                </div>
-                            </div>
-
-                            <div className="bg-white dark:bg-[#0f172a] p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform duration-300">
-                                <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                                    <IconCheck />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Valid</p>
-                                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">{metrics.valid}</h3>
-                                </div>
-                            </div>
-
-                            <div className="bg-white dark:bg-[#0f172a] p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform duration-300">
-                                <div className="p-3 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
-                                    <IconX />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Gagal</p>
-                                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">{metrics.invalid}</h3>
-                                </div>
-                            </div>
-
-                            <div className="bg-white dark:bg-[#0f172a] p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform duration-300 col-span-1">
-                                <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-venus-and-mars"><path d="M10 20H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6"/><circle cx="16" cy="16" r="4"/><path d="M16 12v-2"/><path d="M16 20h.01"/><path d="m9 15 3-3"/></svg>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">L / P Ratio</p>
-                                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-0.5">
-                                        {metrics.male}<span className="text-slate-300 dark:text-slate-700 mx-1">/</span>{metrics.female}
-                                    </h3>
-                                </div>
-                            </div>
-
-                            <div className="bg-white dark:bg-[#0f172a] p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform duration-300 col-span-2 lg:col-span-1">
-                                <div className="p-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                                    <IconTrendingUp />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Rata-rata Umur</p>
-                                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">{metrics.avgAge} Thn</h3>
-                                </div>
-                            </div>
-                        </div>
+                        
 
                         {/* Middle Workspaces */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
