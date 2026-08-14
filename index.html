@@ -1317,9 +1317,7 @@
                 return { ageGroups, sortedProvinces };
             }, [processedData]);
 
-            // Interactive NIK structure explorer hover states
-            const [hoveredSegment, setHoveredSegment] = useState(null);
-
+            
             return (
                 <div className="flex flex-col flex-grow w-full">
                     {/* Header */}
@@ -1449,85 +1447,7 @@
                                     </div>
                                 </div>
 
-                                {/* Privacy Info & Formula Box */}
-                                <div className="bg-gradient-to-br from-indigo-500/5 to-brand-500/5 dark:from-slate-900 dark:to-slate-950 p-5 rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark space-y-4">
-                                    <div className="flex items-center gap-2">
-                                        <IconInfo />
-                                        <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-200">Keterangan & Struktur NIK</h3>
-                                    </div>
-
-                                    {/* NIK segment hover explorer */}
-                                    <div className="space-y-3">
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                                            Arahkan kursor Anda ke bagian angka NIK di bawah ini untuk melihat struktur kodenya secara detail:
-                                        </p>
-
-                                        <div className="flex justify-center font-mono text-base font-extrabold tracking-wider bg-slate-100/50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 select-none overflow-x-auto">
-                                            <span
-                                                onMouseEnter={() => setHoveredSegment('prov')}
-                                                onMouseLeave={() => setHoveredSegment(null)}
-                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'prov' ? 'bg-rose-200 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300' : 'text-slate-700 dark:text-slate-300'}`}
-                                            >35</span>
-                                            <span
-                                                onMouseEnter={() => setHoveredSegment('kab')}
-                                                onMouseLeave={() => setHoveredSegment(null)}
-                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'kab' ? 'bg-amber-200 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300' : 'text-slate-700 dark:text-slate-300'}`}
-                                            >07</span>
-                                            <span
-                                                onMouseEnter={() => setHoveredSegment('kec')}
-                                                onMouseLeave={() => setHoveredSegment(null)}
-                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'kec' ? 'bg-emerald-200 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300'}`}
-                                            >12</span>
-                                            <span
-                                                onMouseEnter={() => setHoveredSegment('tgl')}
-                                                onMouseLeave={() => setHoveredSegment(null)}
-                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'tgl' ? 'bg-blue-200 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300'}`}
-                                            >18</span>
-                                            <span
-                                                onMouseEnter={() => setHoveredSegment('bln')}
-                                                onMouseLeave={() => setHoveredSegment(null)}
-                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'bln' ? 'bg-violet-200 text-violet-800 dark:bg-violet-950/80 dark:text-violet-300' : 'text-slate-700 dark:text-slate-300'}`}
-                                            >08</span>
-                                            <span
-                                                onMouseEnter={() => setHoveredSegment('thn')}
-                                                onMouseLeave={() => setHoveredSegment(null)}
-                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'thn' ? 'bg-fuchsia-200 text-fuchsia-800 dark:bg-fuchsia-950/80 dark:text-fuchsia-300' : 'text-slate-700 dark:text-slate-300'}`}
-                                            >58</span>
-                                            <span
-                                                onMouseEnter={() => setHoveredSegment('urut')}
-                                                onMouseLeave={() => setHoveredSegment(null)}
-                                                className={`cursor-help px-0.5 rounded transition-colors ${hoveredSegment === 'urut' ? 'bg-slate-300 text-slate-800 dark:bg-slate-800 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'}`}
-                                            >0001</span>
-                                        </div>
-
-                                        <div className="min-h-[50px] bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-200/20 dark:border-slate-800/40 text-xs">
-                                            {hoveredSegment === 'prov' && (
-                                                <p className="text-slate-600 dark:text-slate-300"><strong className="text-rose-600 dark:text-rose-400">Digit 1-2 (Provinsi):</strong> Kode wilayah tingkat provinsi (misal: 35 adalah Jawa Timur).</p>
-                                            )}
-                                            {hoveredSegment === 'kab' && (
-                                                <p className="text-slate-600 dark:text-slate-300"><strong className="text-amber-600 dark:text-amber-400">Digit 3-4 (Kabupaten/Kota):</strong> Kode wilayah tingkat kabupaten atau kota.</p>
-                                            )}
-                                            {hoveredSegment === 'kec' && (
-                                                <p className="text-slate-600 dark:text-slate-300"><strong className="text-emerald-600 dark:text-emerald-400">Digit 5-6 (Kecamatan):</strong> Kode wilayah tingkat kecamatan.</p>
-                                            )}
-                                            {hoveredSegment === 'tgl' && (
-                                                <p className="text-slate-600 dark:text-slate-300"><strong className="text-blue-600 dark:text-blue-400">Digit 7-8 (Tanggal Lahir & L/P):</strong> Tanggal kelahiran. Untuk perempuan ditambah 40 (misal: 18 adalah laki-laki lahir tanggal 18, 58 adalah perempuan lahir tanggal 18).</p>
-                                            )}
-                                            {hoveredSegment === 'bln' && (
-                                                <p className="text-slate-600 dark:text-slate-300"><strong className="text-violet-600 dark:text-violet-400">Digit 9-10 (Bulan Lahir):</strong> Bulan kelahiran dari 01 hingga 12.</p>
-                                            )}
-                                            {hoveredSegment === 'thn' && (
-                                                <p className="text-slate-600 dark:text-slate-300"><strong className="text-fuchsia-600 dark:text-fuchsia-400">Digit 11-12 (Tahun Lahir):</strong> Dua digit terakhir tahun kelahiran (Jika &le; 30 dianggap tahun 2000-an, jika &gt; 30 dianggap 1900-an).</p>
-                                            )}
-                                            {hoveredSegment === 'urut' && (
-                                                <p className="text-slate-600 dark:text-slate-300"><strong>Digit 13-16 (Nomor Urut):</strong> Nomor registrasi sistematis kependudukan unik berurutan dimulai dari 0001.</p>
-                                            )}
-                                            {!hoveredSegment && (
-                                                <p className="text-slate-400 dark:text-slate-500 italic text-center">Arahkan kursor Anda ke salah satu segmen angka di atas.</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                                
                             </div>
 
                             {/* Output & Analytics Column */}
