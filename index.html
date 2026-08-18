@@ -978,6 +978,43 @@
             }
         };
 
+        const AdsterraBanner = () => {
+            const srcDoc = `
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <style>
+                            body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; background: transparent; }
+                        </style>
+                    </head>
+                    <body>
+                        <script type="text/javascript">
+                            atOptions = {
+                                'key' : '6271cfdf56295652962e801da56454dd',
+                                'format' : 'iframe',
+                                'height' : 300,
+                                'width' : 160,
+                                'params' : {}
+                            };
+                        <\/script>
+                        <script type="text/javascript" src="https://cabinetavidgrasp.com/6271cfdf56295652962e801da56454dd/invoke.js"><\/script>
+                    </body>
+                </html>
+            `;
+
+            return (
+                <iframe
+                    srcDoc={srcDoc}
+                    width="160"
+                    height="300"
+                    frameBorder="0"
+                    scrolling="no"
+                    className="w-[160px] h-[300px] border-0 overflow-hidden"
+                    title="Sponsor Ad"
+                />
+            );
+        };
+
         const App = () => {
             const [rawInput, setRawInput] = useState('');
             const [processedData, setProcessedData] = useState([]);
@@ -1485,6 +1522,17 @@
                                         <span>Akses Server Premium</span>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
                                     </a>
+                                </div>
+
+                                {/* Adsterra 160x300 Banner Card */}
+                                <div className="bg-white dark:bg-[#0f172a] p-4 rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark flex flex-col items-center gap-3">
+                                    <div className="flex items-center gap-1.5 text-slate-450 dark:text-slate-500 self-start">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><path d="M12 12h.01"/><path d="M17 12h.01"/><path d="M7 12h.01"/></svg>
+                                        <span className="text-[10px] font-extrabold uppercase tracking-wider">Sponsor</span>
+                                    </div>
+                                    <div className="w-full flex justify-center">
+                                        <AdsterraBanner />
+                                    </div>
                                 </div>
                             </div>
 
@@ -2228,6 +2276,8 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+    <!-- Adsterra Social Bar -->
+    <script src="https://cabinetavidgrasp.com/76/6d/43/766d438bd6737134681cb9f8f0f9e0ae.js"></script>
 </body>
 
 </html>
